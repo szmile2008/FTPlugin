@@ -1,4 +1,9 @@
 #pragma once
+
+#ifndef interface
+#define interface struct
+#endif
+
  
 /************************************************* 
 Copyright: FUTU
@@ -6,13 +11,6 @@ Author: ysq
 Date: 2015-03-18
 Description: 行情API和回调接口定义
 **************************************************/  
-
-static const GUID IID_IFTQuoteData = 
-{ 0xb75073e3, 0xaa3a, 0x4717, { 0xac, 0xa2, 0x11, 0x94, 0xa1, 0x3, 0x78, 0xc7 } };
-
-static const GUID IID_IFTQuoteOperation = 
-{ 0x9c65990c, 0x903, 0x4185, { 0x97, 0x12, 0x3e, 0xa7, 0xab, 0x34, 0xd, 0xc5 } };
-
 
 /**
 *股票的市场类型 
@@ -25,6 +23,15 @@ enum StockMktType
 	StockMkt_SZ = 4,  //深股
 }; 
 
+enum StockSubErrCode
+{
+	StockSub_Suc = 0,	//订阅成功
+	StockSub_FailUnknown	= 1,	//未知的失败
+	StockSub_FailMaxSubNum	= 2,	//到达最大订阅数
+	StockSub_FailCodeNoFind = 3,	//代码没找到(也有可能是市场类型错了)
+	StockSub_FailGuidNoFind = 4,	//插件GUID传错
+	StockSub_FailNoImplInf = 5,		//行情接口未完成
+};
 
 /**
 * 股票基础报价信息：
@@ -59,9 +66,9 @@ typedef struct tagQuoteOrderQueue
 */
 interface IFTQuoteOperation 
 {
-	//行情定阅
-	virtual void Subscribe_PriceBase(GUID guidPlugin, LPCWSTR wstrStockCode,  StockMktType eType, bool bSubb) = 0;  
-	virtual void Subscribe_OrderQueue(GUID guidPlugin, LPCWSTR wstrStockCode, StockMktType eType, bool bSubb) = 0; 
+	//行情定阅，返回错误码
+	virtual StockSubErrCode Subscribe_PriceBase(const GUID &guidPlugin, LPCWSTR wstrStockCode,  StockMktType eType, bool bSubb) = 0;  
+	virtual StockSubErrCode Subscribe_OrderQueue(const GUID &guidPlugin, LPCWSTR wstrStockCode, StockMktType eType, bool bSubb) = 0; 
 };
 
 /**

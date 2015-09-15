@@ -3,6 +3,16 @@
 #include "IQuote.h"
 #include "ITrade.h" 
 
+static const GUID IID_IFTQuoteData = 
+{ 0xb75073e3, 0xaa3a, 0x4717, { 0xac, 0xa2, 0x11, 0x94, 0xa1, 0x3, 0x78, 0xc7 } };
+
+static const GUID IID_IFTQuoteOperation = 
+{ 0x9c65990c, 0x903, 0x4185, { 0x97, 0x12, 0x3e, 0xa7, 0xab, 0x34, 0xd, 0xc5 } };
+
+static const GUID IID_IFTTrade = 
+{ 0x69a88049, 0x252e, 0x4a12, { 0x83, 0x41, 0xdd, 0x4c, 0x6e, 0x84, 0x8b, 0x27 } };
+
+
 /**
 * 该插件接口要求的FTCore 最低版本 
 */
@@ -36,7 +46,7 @@ interface IFTPluginMoudle
 	/**
 	* 插件名称guid  
 	*/ 
-	virtual std::wstring 	GetName() = 0;
+	virtual LPCWSTR	GetName() = 0;
 	virtual GUID    GetGuid() = 0; 
 
 	/**
@@ -47,20 +57,20 @@ interface IFTPluginMoudle
 	/*
 	* 主程序事件通知时， 从Plugin得到回调接口 
 	*/
-	virtual void  GetPluginCallback_Quote(IQuoteInfoCallback* pCallback) = 0; 
-	virtual void  GetPluginCallback_TradeHK(ITradeCallBack_HK* pCallback) = 0; 
+	virtual void  GetPluginCallback_Quote(IQuoteInfoCallback** pCallback) = 0; 
+	virtual void  GetPluginCallback_TradeHK(ITradeCallBack_HK** pCallback) = 0; 
 }; 
 
 
 /**
-* 插件dll 导出接口， 以便ftnn主程序能够加载该模块 
+* 插件dll 导出接口"GetFTPluginMoudle"， 以便ftnn主程序能够加载该模块 
 
 * @param nVerSupport该插件需要FTCore最低版本号,一般传回定义FTCore_Support_MinVer,
    如果过低,将不会加载该插件
 
 * @return  插件的模块对象
 */
-IFTPluginMoudle*  (__stdcall* LPGetFTPluginMoudle)(int& nVerSupport); 
+typedef IFTPluginMoudle*  (__stdcall* LPGetFTPluginMoudle)(int& nVerSupport); 
 
 
 /************************************************************************/
