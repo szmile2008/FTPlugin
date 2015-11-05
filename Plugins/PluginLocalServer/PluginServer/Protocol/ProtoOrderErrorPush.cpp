@@ -214,21 +214,21 @@ void CProtoOrderErrorPush::GetProtoBodyField_Req(VT_PROTO_FIELD &vtField, const 
 void CProtoOrderErrorPush::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const ProtoAckBodyType &ackData)
 {
 	static BOOL arOptional[] = {		
-		FALSE, FALSE, FALSE,
+		FALSE, FALSE, FALSE, FALSE,
 		FALSE,
 	};
 	static EProtoFildType arFieldType[] = {		
-		ProtoFild_Int64, ProtoFild_Int32, ProtoFild_Int32,
+		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32, ProtoFild_Int32,
 		ProtoFild_StringA,
 	};
 	static LPCSTR arFieldKey[] = {		
-		"OrderID",	"OrderErrNotifyHK", "OrderErrCode",
+		"EnvType",	"OrderID",	"OrderErrNotifyHK", "OrderErrCode",
 		"OrderErrDesc",
 	};
 
 	ProtoAckBodyType &body = const_cast<ProtoAckBodyType &>(ackData);
 	void *arPtr[] = {		
-		&body.nOrderID,	&body.nOrderErrNotifyHK, &body.nOrderErrCode,
+		&body.nEnvType,	&body.nOrderID,	&body.nOrderErrNotifyHK, &body.nOrderErrCode,
 		&body.strOrderErrDesc,
 	};
 

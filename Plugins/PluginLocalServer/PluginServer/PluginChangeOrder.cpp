@@ -91,7 +91,7 @@ void CPluginChangeOrder::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, 
 
 	//tomodify 3
 	ChangeOrderHKReqBody &body = req.body;		
-	bool bRet = m_pTradeOp->ChangeOrder((UINT*)&pReq->dwLocalCookie, body.nOrderID, 
+	bool bRet = m_pTradeOp->ChangeOrder((Trade_Env)body.nEnvType, (UINT*)&pReq->dwLocalCookie, body.nOrderID, 
 		body.nPrice, body.nQty);
 
 	if ( !bRet )
@@ -115,7 +115,7 @@ void CPluginChangeOrder::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, 
 	SetTimerHandleTimeout(true);
 }
 
-void CPluginChangeOrder::NotifyOnPlaceOrder(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode)
+void CPluginChangeOrder::NotifyOnPlaceOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode)
 {
 	CHECK_RET(nCookie, NORET);
 	CHECK_RET(m_pTradeOp && m_pHKTradeServer, NORET);
@@ -146,6 +146,7 @@ void CPluginChangeOrder::NotifyOnPlaceOrder(UINT nCookie, Trade_SvrResult enSvrR
 	}
 
 	//tomodify 4
+	ack.body.nEnvType = enEnv;
 	ack.body.nCookie = pFindReq->req.body.nCookie;
 	ack.body.nOrderID = pFindReq->req.body.nOrderID;
 	ack.body.nSvrResult = enSvrRet;

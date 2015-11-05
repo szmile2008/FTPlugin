@@ -166,21 +166,21 @@ bool CProtoChangeOrder::MakeProtoBody_Ack(Json::Value &jsnVal, const ProtoAckDat
 void CProtoChangeOrder::GetProtoBodyField_Req(VT_PROTO_FIELD &vtField, const ProtoReqBodyType &reqData)
 {
 	static BOOL arOptional[] = {
-		FALSE, FALSE, FALSE,
+		FALSE, FALSE, FALSE, FALSE,
 		FALSE, 
 	};
 	static EProtoFildType arFieldType[] = {		
-		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32,
+		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32,
 		ProtoFild_Int64,
 	};
 	static LPCSTR arFieldKey[] = {
-		"Cookie",	"OrderID",	"Price",
+		"EnvType",	"Cookie",	"OrderID",	"Price",
 		"Qty",
 	};
 
 	ProtoReqBodyType &body = const_cast<ProtoReqBodyType &>(reqData);	
 	void *arPtr[] = {		
-		&body.nCookie,	&body.nOrderID, &body.nPrice,
+		&body.nEnvType, &body.nCookie, &body.nOrderID, &body.nPrice,
 		&body.nQty,
 	};
 
@@ -222,18 +222,18 @@ void CProtoChangeOrder::GetProtoBodyField_Req(VT_PROTO_FIELD &vtField, const Pro
 void CProtoChangeOrder::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const ProtoAckBodyType &ackData)
 {
 	static BOOL arOptional[] = {
-		FALSE, FALSE, FALSE,		
+		FALSE, FALSE, FALSE, FALSE,		
 	};
 	static EProtoFildType arFieldType[] = {
-		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32, 
+		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32, 
 	};
 	static LPCSTR arFieldKey[] = {
-		"Cookie",		"OrderID",		"SvrResult",
+		"EnvType,	""Cookie",		"OrderID",		"SvrResult",
 	};
 
 	ProtoAckBodyType &body = const_cast<ProtoAckBodyType &>(ackData);
 	void *arPtr[] = {
-		&body.nCookie,		&body.nOrderID,		&body.nSvrResult,		
+		&body.nEnvType,		&body.nCookie,		&body.nOrderID,		&body.nSvrResult,		
 	};
 
 	CHECK_OP(_countof(arOptional) == _countof(arFieldType), NOOP);

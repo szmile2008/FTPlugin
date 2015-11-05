@@ -214,19 +214,19 @@ void CProtoOrderUpdatePush::GetProtoBodyField_Req(VT_PROTO_FIELD &vtField, const
 void CProtoOrderUpdatePush::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const ProtoAckBodyType &ackData)
 {
 	static BOOL arOptional[] = {
-		FALSE, FALSE, FALSE,
+		FALSE, FALSE, FALSE, FALSE,
 		FALSE, FALSE, FALSE,
 		FALSE, FALSE, FALSE,
 		FALSE, FALSE, FALSE,
 	};
 	static EProtoFildType arFieldType[] = {
-		ProtoFild_Int64, ProtoFild_Int64, ProtoFild_Int32, 
+		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int64, ProtoFild_Int32, 
 		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_StringA,
 		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int64,
 		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_StringA,
 	};
 	static LPCSTR arFieldKey[] = {
-		"LocalID",		"OrderID",		"OrderSide", 
+		"EnvType",		"LocalID",		"OrderID",		"OrderSide", 
 		"OrderTypeHK",	"OrderStatusHK","StockName",
 		"Price",		"Qty",			"DealtQty",
 		"SubmitTime",	"UpdateTime",	"StockCode",
@@ -234,7 +234,7 @@ void CProtoOrderUpdatePush::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const
 
 	ProtoAckBodyType &body = const_cast<ProtoAckBodyType &>(ackData);
 	void *arPtr[] = {
-		&body.nLocalID,		&body.nOrderID,			&body.nOrderDir,
+		&body.nEnvType,		&body.nLocalID,		&body.nOrderID,			&body.nOrderDir,
 		&body.nOrderTypeHK,	&body.nOrderStatusHK,	&body.strStockName,
 		&body.nPrice,		&body.nQTY,				&body.nDealQTY,
 		&body.nSubmitTime,	&body.nUpdateTime,		&body.strStockCode,

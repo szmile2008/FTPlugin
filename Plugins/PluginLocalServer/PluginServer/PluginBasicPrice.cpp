@@ -132,6 +132,7 @@ void CPluginBasicPrice::SetQuoteReqData(int nCmdID, const Json::Value &jsnVal, S
 			ack.nOpen = price.dwOpen;
 			ack.nHigh = price.dwHigh;
 			ack.nLow = price.dwLow;
+			ack.nCur = price.dwCur;
 			ack.nTurnover = price.ddwTrunover;
 			ack.nVolume = price.ddwVolume;
 			m_mapCacheData[nStockID] = ack;
@@ -167,9 +168,9 @@ void CPluginBasicPrice::NotifyQuoteDataUpdate(int nCmdID, INT64 nStockID)
 		ack.nOpen = price.dwOpen;
 		ack.nHigh = price.dwHigh;
 		ack.nLow = price.dwLow;
+		ack.nCur = price.dwCur;
 		ack.nTurnover = price.ddwTrunover;
-		ack.nVolume = price.ddwVolume;
-		m_mapCacheData[nStockID] = ack;
+		ack.nVolume = price.ddwVolume;		
 		m_MsgHandler.RaiseEvent(EVENT_ID_ACK_REQUEST, 0, 0);
 	}
 }
@@ -217,7 +218,7 @@ void CPluginBasicPrice::ClearQuoteDataCache()
 		}
 		else
 		{
-			if ( int(dwTickNow - dwToDelTick) > 500  )
+			if ( int(dwTickNow - dwToDelTick) > 60*1000  )
 			{
 				m_mapCacheData.erase(nStockID);
 				it_todel = m_mapCacheToDel.erase(it_todel);

@@ -24,11 +24,11 @@ public:
 
 protected:
 	//ITradeCallBack_HK
-	virtual void OnPlaceOrder(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode);	
-	virtual void OnOrderUpdate(const Trade_OrderItem_HK& orderItem);
-	virtual void OnSetOrderStatus(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode);
-	virtual void OnChangeOrder(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode);
-	virtual void OnOrderErrNotify(UINT64 nOrderID, Trade_OrderErrNotify_HK enErrNotify, UINT16 nErrCode);
+	virtual void OnPlaceOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode);	
+	virtual void OnOrderUpdate(Trade_Env enEnv, const Trade_OrderItem_HK& orderItem);
+	virtual void OnSetOrderStatus(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode);
+	virtual void OnChangeOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode);
+	virtual void OnOrderErrNotify(Trade_Env enEnv, UINT64 nOrderID, Trade_OrderErrNotify_HK enErrNotify, UINT16 nErrCode);
 
 
 protected:

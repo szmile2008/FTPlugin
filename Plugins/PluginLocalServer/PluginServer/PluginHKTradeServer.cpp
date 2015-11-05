@@ -104,12 +104,12 @@ void CPluginHKTradeServer::ReplyTradeReq(int nCmdID, const char *pBuf, int nLen,
 	m_pNetwork->SendData(sock, pBuf, nLen);
 }
 
-void CPluginHKTradeServer::OnPlaceOrder(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode)
+void CPluginHKTradeServer::OnPlaceOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode)
 {
-	m_PlaceOrder.NotifyOnPlaceOrder(nCookie, enSvrRet, nLocalID, nErrCode);
+	m_PlaceOrder.NotifyOnPlaceOrder(enEnv, nCookie, enSvrRet, nLocalID, nErrCode);
 }
 
-void CPluginHKTradeServer::OnOrderUpdate(const Trade_OrderItem_HK& orderItem)
+void CPluginHKTradeServer::OnOrderUpdate(Trade_Env enEnv, const Trade_OrderItem_HK& orderItem)
 {
 	CHECK_RET(m_pNetwork, NORET);
 
@@ -118,6 +118,7 @@ void CPluginHKTradeServer::OnOrderUpdate(const Trade_OrderItem_HK& orderItem)
 	ack.head.nProtoID = PROTO_ID_TDHK_PUSH_ORDER_UPDATE;
 	ack.head.nProtoVer = 1;
 
+	ack.body.nEnvType = enEnv;
 	ack.body.nLocalID = orderItem.nLocalID;
 	ack.body.nOrderID = orderItem.nOrderID;
 	ack.body.nOrderDir = orderItem.enSide;
@@ -144,17 +145,17 @@ void CPluginHKTradeServer::OnOrderUpdate(const Trade_OrderItem_HK& orderItem)
 	m_pNetwork->PushData(strBuf.c_str(), (int)strBuf.size());
 }
 
-void CPluginHKTradeServer::OnSetOrderStatus(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode)
+void CPluginHKTradeServer::OnSetOrderStatus(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode)
 {
-	m_SetOrderStatus.NotifyOnSetOrderStatus(nCookie, enSvrRet, nOrderID, nErrCode);
+	m_SetOrderStatus.NotifyOnSetOrderStatus(enEnv, nCookie, enSvrRet, nOrderID, nErrCode);
 }
 
-void CPluginHKTradeServer::OnChangeOrder(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode)
+void CPluginHKTradeServer::OnChangeOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode)
 {
-	m_ChangeOrder.NotifyOnPlaceOrder(nCookie, enSvrRet, nOrderID, nErrCode);
+	m_ChangeOrder.NotifyOnPlaceOrder(enEnv, nCookie, enSvrRet, nOrderID, nErrCode);
 }
 
-void CPluginHKTradeServer::OnOrderErrNotify(UINT64 nOrderID, Trade_OrderErrNotify_HK enErrNotify, UINT16 nErrCode)
+void CPluginHKTradeServer::OnOrderErrNotify(Trade_Env enEnv, UINT64 nOrderID, Trade_OrderErrNotify_HK enErrNotify, UINT16 nErrCode)
 {
 	CHECK_RET(m_pNetwork && m_pTradeOp, NORET);
 
@@ -163,6 +164,7 @@ void CPluginHKTradeServer::OnOrderErrNotify(UINT64 nOrderID, Trade_OrderErrNotif
 	ack.head.nProtoID = PROTO_ID_TDHK_PUSH_ORDER_ERROR;
 	ack.head.nProtoVer = 1;
 
+	ack.body.nEnvType = enEnv;
 	ack.body.nOrderID = nOrderID;
 	ack.body.nOrderErrNotifyHK = enErrNotify;
 	ack.body.nOrderErrCode = nErrCode;

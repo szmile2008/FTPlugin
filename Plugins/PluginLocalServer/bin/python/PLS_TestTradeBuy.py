@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-  
 '''
 Created on 2015年9月9日
-
+#脚本说明: !!!
+#
+#仿真交易环境下，向svr提交一个增强限价单: 买入港股00700 /100股/ 价格150.000  
+#并回显定单的状态， 全部成交或交易异常,程序退出
+#
 @author: futu
 '''
 
@@ -71,16 +75,15 @@ g_s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 g_s.connect((host,port))
 
 
-#增强限价单: 买入港股00700 /100股/ 价格110.000  
 def fun_TestTrade(args=[]):
     print "enter fun testTrade ..."
-    req1 = {'Protocol':'6003','ReqParam':{'Cookie':'8888','OrderSide':'0','OrderTypeHK':'1','Price':'110000','Qty':'100','StockCode':'00700'},'Version':'1'}
+    req1 = {'Protocol':'6003','ReqParam':{'EnvType':'1', 'Cookie':'8888','OrderSide':'0','OrderTypeHK':'0','Price':'150000','Qty':'100','StockCode':'00700'},'Version':'1'}
     global g_buy, g_lid, g_sid, g_end
     if g_buy == 0:
         str = json.dumps(req1) + "\r\n"
         g_s.send(str)
         g_buy = 1
-			
+    print "Wait trade order respons ..." 
     rsp = g_s.recv(4096)
     arstr = rsp.split("\r\n") 
     for str in arstr:

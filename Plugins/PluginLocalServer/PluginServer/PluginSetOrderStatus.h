@@ -18,7 +18,7 @@ public:
 	void Init(CPluginHKTradeServer* pTradeServer, ITrade_HK*  pTradeOp);
 	void Uninit();	
 	void SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock);
-	void NotifyOnSetOrderStatus(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode);
+	void NotifyOnSetOrderStatus(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode);
 
 protected:
 	//CTimerWndInterface 

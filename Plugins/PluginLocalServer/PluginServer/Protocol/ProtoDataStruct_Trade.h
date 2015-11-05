@@ -10,6 +10,7 @@ struct	OrderUpdatePushHKReqBody
 
 struct OrderUpdatePushHKAckBody
 {
+	int nEnvType;
 	INT64 nLocalID;
 	INT64 nOrderID;
 	int   nOrderDir;
@@ -46,6 +47,7 @@ struct	OrderErrorPushHKReqBody
 
 struct OrderErrorPushHKAckBody
 {	
+	int nEnvType;
 	INT64 nOrderID;
 	int   nOrderErrNotifyHK;
 	int	  nOrderErrCode;
@@ -69,6 +71,7 @@ struct	OrderErrorPushHK_Ack
 //下港股订单 PROTO_ID_TDHK_PLACE_ORDER
 struct	PlaceOrderHKReqBody
 {
+	int nEnvType;
 	int nCookie;
 	int nOrderDir;
 	int nOrderTypeHK;
@@ -79,6 +82,7 @@ struct	PlaceOrderHKReqBody
 
 struct PlaceOrderHKAckBody
 {	
+	int nEnvType;
 	int nCookie;
 	INT64 nLocalID;
 	int nSvrResult;	
@@ -101,6 +105,7 @@ struct	PlaceOrderHK_Ack
 //设置港股订单状态 PROTO_ID_TDHK_SET_ORDER_STATUS
 struct	SetOrderStatusHKReqBody
 {
+	int nEnvType;
 	int nCookie;
 	int nSetOrderStatusHK;
 	INT64 nOrderID;
@@ -108,6 +113,7 @@ struct	SetOrderStatusHKReqBody
 
 struct SetOrderStatusHKAckBody
 {	
+	int nEnvType;
 	int nCookie;
 	INT64 nOrderID;
 	int nSvrResult;	
@@ -130,6 +136,7 @@ struct	SetOrderStatusHK_Ack
 //港股改单 PROTO_ID_TDHK_CHANGE_ORDER
 struct	ChangeOrderHKReqBody
 {
+	int nEnvType;
 	int nCookie;
 	INT64 nOrderID;
 	int nPrice;
@@ -138,6 +145,7 @@ struct	ChangeOrderHKReqBody
 
 struct ChangeOrderHKAckBody
 {	
+	int nEnvType;
 	int nCookie;
 	INT64 nOrderID;
 	int nSvrResult;	

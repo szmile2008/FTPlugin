@@ -19,6 +19,7 @@ struct BasicPriceAckBody
 	int nClose;
 	int nLastClose;
 	int nLow;
+	int nCur;
 	INT64 nVolume;
 	INT64 nTurnover;
 

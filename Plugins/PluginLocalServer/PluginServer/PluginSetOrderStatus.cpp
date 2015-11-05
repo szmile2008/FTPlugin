@@ -91,7 +91,7 @@ void CPluginSetOrderStatus::SetTradeReqData(int nCmdID, const Json::Value &jsnVa
 
 	//tomodify 3
 	SetOrderStatusHKReqBody &body = req.body;		
-	bool bRet = m_pTradeOp->SetOrderStatus((UINT*)&pReq->dwLocalCookie, body.nOrderID, 
+	bool bRet = m_pTradeOp->SetOrderStatus((Trade_Env)body.nEnvType, (UINT*)&pReq->dwLocalCookie, body.nOrderID, 
 		(Trade_SetOrderStatus_HK)body.nSetOrderStatusHK);
 
 	if ( !bRet )
@@ -115,7 +115,7 @@ void CPluginSetOrderStatus::SetTradeReqData(int nCmdID, const Json::Value &jsnVa
 	SetTimerHandleTimeout(true);
 }
 
-void CPluginSetOrderStatus::NotifyOnSetOrderStatus(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode)
+void CPluginSetOrderStatus::NotifyOnSetOrderStatus(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode)
 {
 	CHECK_RET(nCookie, NORET);
 	CHECK_RET(m_pTradeOp && m_pHKTradeServer, NORET);
@@ -146,6 +146,7 @@ void CPluginSetOrderStatus::NotifyOnSetOrderStatus(UINT nCookie, Trade_SvrResult
 	}
 
 	//tomodify 4
+	ack.body.nEnvType = enEnv;
 	ack.body.nCookie = pFindReq->req.body.nCookie;
 	ack.body.nOrderID = pFindReq->req.body.nOrderID;
 	ack.body.nSvrResult = enSvrRet;

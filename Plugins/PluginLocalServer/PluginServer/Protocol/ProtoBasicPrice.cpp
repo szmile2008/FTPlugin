@@ -220,19 +220,19 @@ void CProtoBasicPrice::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const Prot
 	static BOOL arOptional[] = {
 		FALSE, FALSE, FALSE,
 		FALSE, FALSE, FALSE,
-		FALSE,
+		FALSE, FALSE,
 		FALSE, FALSE,
 	};
 	static EProtoFildType arFieldType[] = {
 		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int32, 
 		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int64,
-		ProtoFild_Int32,
+		ProtoFild_Int32, ProtoFild_Int32,
 		ProtoFild_Int32, ProtoFild_StringA, 
 	};
 	static LPCSTR arFieldKey[] = {
 		"High",	"Open",	"Low", 
 		"Close", "Vol", "Turnover",
-		"LastClose",
+		"LastClose","Cur",
 		"Market",	"StockCode",
 	};
 
@@ -240,7 +240,7 @@ void CProtoBasicPrice::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const Prot
 	void *arPtr[] = {
 		&body.nHigh,	&body.nOpen,	&body.nLow,
 		&body.nClose,	&body.nVolume,	&body.nTurnover,
-		&body.nLastClose,
+		&body.nLastClose,&body.nCur,
 		&body.nStockMarket,	&body.strStockCode,
 	};
 

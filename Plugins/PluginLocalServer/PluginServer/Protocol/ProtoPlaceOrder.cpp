@@ -166,21 +166,21 @@ bool CProtoPlaceOrder::MakeProtoBody_Ack(Json::Value &jsnVal, const ProtoAckData
 void CProtoPlaceOrder::GetProtoBodyField_Req(VT_PROTO_FIELD &vtField, const ProtoReqBodyType &reqData)
 {
 	static BOOL arOptional[] = {
-		FALSE, FALSE, FALSE,
+		FALSE, FALSE, FALSE, FALSE,
 		FALSE, FALSE, FALSE,
 	};
 	static EProtoFildType arFieldType[] = {		
-		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int32,
+		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int32,
 		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_StringA,
 	};
 	static LPCSTR arFieldKey[] = {
-		"Cookie",	"OrderSide",	"OrderTypeHK",
+		"EnvType", "Cookie",	"OrderSide",	"OrderTypeHK",
 		"Price",	"Qty",			"StockCode",
 	};
 
-	ProtoReqBodyType &body = const_cast<ProtoReqBodyType &>(reqData);	
+	ProtoReqBodyType &body = const_cast<ProtoReqBodyType &>(reqData);
 	void *arPtr[] = {		
-		&body.nCookie,	&body.nOrderDir, &body.nOrderTypeHK,
+		&body.nEnvType, &body.nCookie,	&body.nOrderDir, &body.nOrderTypeHK,
 		&body.nPrice,	&body.nQty,		 &body.strCode,
 	};
 
@@ -222,18 +222,18 @@ void CProtoPlaceOrder::GetProtoBodyField_Req(VT_PROTO_FIELD &vtField, const Prot
 void CProtoPlaceOrder::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const ProtoAckBodyType &ackData)
 {
 	static BOOL arOptional[] = {
-		FALSE, FALSE, FALSE,		
+		FALSE, FALSE, FALSE, FALSE,		
 	};
 	static EProtoFildType arFieldType[] = {
-		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32, 
+		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32, 
 	};
 	static LPCSTR arFieldKey[] = {
-		"Cookie",		"LocalID",		"SvrResult",
+		"nEnvType",		"Cookie",		"LocalID",		"SvrResult",
 	};
 
 	ProtoAckBodyType &body = const_cast<ProtoAckBodyType &>(ackData);
 	void *arPtr[] = {
-		&body.nCookie,		&body.nLocalID,		&body.nSvrResult,		
+		&body.nEnvType,		&body.nCookie,		&body.nLocalID,		&body.nSvrResult,		
 	};
 
 	CHECK_OP(_countof(arOptional) == _countof(arFieldType), NOOP);

@@ -165,6 +165,7 @@ void CPluginGearPrice::NotifyQuoteDataUpdate(int nCmdID, INT64 nStockID)
 	if ( (bInReq || bInCache) && m_pQuoteData->FillOrderQueue(nStockID, price, _countof(price)) )
 	{
 		QuoteAckDataBody &ack = m_mapCacheData[nStockID];
+		ack.vtGear.clear();
 		for ( int n = 0; n < _countof(price); n++ )
 		{
 			GearPriceAckItem item;
@@ -225,7 +226,7 @@ void CPluginGearPrice::ClearQuoteDataCache()
 		}
 		else
 		{
-			if ( int(dwTickNow - dwToDelTick) > 500  )
+			if ( int(dwTickNow - dwToDelTick) > 60*1000  )
 			{
 				m_mapCacheData.erase(nStockID);
 				it_todel = m_mapCacheToDel.erase(it_todel);
