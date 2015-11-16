@@ -520,10 +520,17 @@ void CPluginNetwork::AccpetLoop()
 	CString strCfg = CA::GetMoudleFolder(AfxGetInstanceHandle());
 	strCfg.Append(L"config.ini");
 	int nPort = 11111;
+	CString strIP = _T("127.0.0.1");
 	if ( PathFileExists(strCfg) )
 	{
-		CString strPort;
 		nPort = ::GetPrivateProfileInt(L"pluginserver", L"port", nPort, strCfg);
+		TCHAR chIP[16]={0};
+		::GetPrivateProfileString(L"pluginserver", L"ip", _T(""), chIP, _countof(chIP)-1,  strCfg);
+
+		if (_tcslen(chIP))
+		{ 
+			strIP = chIP; 
+		}
 	}	
 
 	//bind
@@ -536,7 +543,7 @@ void CPluginNetwork::AccpetLoop()
 	sockaddr_in addr_local;
 	addr_local.sin_family = AF_INET;
 	addr_local.sin_port = htons((u_short)nPort);
-	addr_local.sin_addr.s_addr = inet_addr("127.0.0.1");
+	addr_local.sin_addr.s_addr = inet_addr(CT2CA(strIP));
 	bind(sock_lstn, (SOCKADDR*)&addr_local, sizeof(addr_local));
 
 	//listen
