@@ -228,7 +228,7 @@ void CProtoChangeOrder::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const Pro
 		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32, 
 	};
 	static LPCSTR arFieldKey[] = {
-		"EnvType,	""Cookie",		"OrderID",		"SvrResult",
+		"EnvType",  "Cookie",   "OrderID", "SvrResult",
 	};
 
 	ProtoAckBodyType &body = const_cast<ProtoAckBodyType &>(ackData);

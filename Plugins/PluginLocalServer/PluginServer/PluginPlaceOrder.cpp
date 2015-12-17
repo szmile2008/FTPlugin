@@ -101,7 +101,7 @@ void CPluginPlaceOrder::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, S
 		TradeAckType ack;
 		ack.head = req.head;
 		ack.head.nErrCode = PROTO_ERR_UNKNOWN_ERROR;
-		ack.head.strErrDesc = "∑¢ÀÕ ß∞‹";
+		CA::Unicode2UTF(L"∑¢ÀÕ ß∞‹", ack.head.strErrDesc);
 
 		ack.body.nCookie = body.nCookie;
 		ack.body.nLocalID = 0;
