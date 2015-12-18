@@ -46,6 +46,7 @@ typedef struct tagQuotePriceBase
 	DWORD dwLow;		//最低价
 	INT64 ddwVolume;	//成交量
 	INT64 ddwTrunover;	//成交额
+	DWORD dwTime;		//报价时间
 }Quote_PriceBase, *LPQuote_PriceBase;
 
 

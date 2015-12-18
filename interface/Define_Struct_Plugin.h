@@ -14,9 +14,9 @@ static const GUID IID_IFTTrade =
 
 
 /**
-* 该插件接口要求的FTCore 最低版本 
+* 该插件接口要求的FTCore匹配版本号
 */
-#define  FTCore_Support_MinVer  100 
+#define  FTCore_Support_Ver  101
 
 interface IFTPluginCore 
 { 

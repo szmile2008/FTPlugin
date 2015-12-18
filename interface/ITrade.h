@@ -12,6 +12,12 @@ Date: 2015-03-18
 Description: 交易API和回调接口定义
 **************************************************/  
 
+enum Trade_Env
+{
+	Trade_Env_Real = 0, //真实环境（实盘交易）
+	Trade_Env_Virtual = 1, //虚拟环境（仿真交易或模拟交易）
+};
+
 enum Trade_SvrResult
 {
 	Trade_SvrResult_Succeed = 0, //服务器返回请求处理成功
@@ -104,6 +110,7 @@ interface ITrade_HK
 	/**
 	* 下单
 
+	* @param enEnv 交易环境(实盘交易或仿真交易).
 	* @param pCookie 接收本次调用对应的Cookie值，用于服务器返回时做对应关系判断.
 	* @param enType 订单类型.
 	* @param enSide 订单方向，买或卖.
@@ -113,22 +120,24 @@ interface ITrade_HK
 
 	* @return true发送成功，false发送失败.
 	*/
-	virtual bool PlaceOrder(UINT* pCookie, Trade_OrderType_HK enType, Trade_OrderSide enSide, LPCWSTR lpszCode, UINT64 nPrice, UINT64 nQty) = 0;
+	virtual bool PlaceOrder(Trade_Env enEnv, UINT* pCookie, Trade_OrderType_HK enType, Trade_OrderSide enSide, LPCWSTR lpszCode, UINT64 nPrice, UINT64 nQty) = 0;
 
 	/**
 	* 设置订单状态
 
+	* @param enEnv 交易环境(实盘交易或仿真交易).
 	* @param pCookie 接收本次调用对应的Cookie值，用于服务器返回时做对应关系判断.
 	* @param nOrderID 订单真正的ID.
 	* @param enStatus 设置为何种状态.
 
 	* @return true发送成功，false发送失败.
 	*/
-	virtual bool SetOrderStatus(UINT* pCookie, UINT64 nOrderID, Trade_SetOrderStatus_HK enStatus) = 0;
+	virtual bool SetOrderStatus(Trade_Env enEnv, UINT* pCookie, UINT64 nOrderID, Trade_SetOrderStatus_HK enStatus) = 0;
 
 	/**
 	* 改单
 
+	* @param enEnv 交易环境(实盘交易或仿真交易).
 	* @param pCookie 接收本次调用对应的Cookie值，用于服务器返回时做对应关系判断.
 	* @param nOrderID 订单真正的ID.
 	* @param nPrice 新的订单价格.
@@ -136,7 +145,7 @@ interface ITrade_HK
 
 	* @return true发送成功，false发送失败.
 	*/
-	virtual bool ChangeOrder(UINT* pCookie, UINT64 nOrderID, UINT64 nPrice, UINT64 nQty) = 0;
+	virtual bool ChangeOrder(Trade_Env enEnv, UINT* pCookie, UINT64 nOrderID, UINT64 nPrice, UINT64 nQty) = 0;
 
 	/**
 	* 通过错误码得到错误描述
@@ -154,46 +163,51 @@ interface ITradeCallBack_HK
 	/**
 	* 下单请求返回
 
+	* @param enEnv 交易环境(实盘交易或仿真交易).
 	* @param nCookie 请求时的Cookie.
 	* @param enSvrRet 服务器处理结果.
 	* @param nLocalID 客户端产生的订单ID，用于与后续推送订单关联.
 	* @param nErrCode 错误码.
 	*/
-	virtual void OnPlaceOrder(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode) = 0;
+	virtual void OnPlaceOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode) = 0;
 
 	/**
 	* 订单更新推送
 
+	* @param enEnv 交易环境(实盘交易或仿真交易).
 	* @param orderItem 订单结构体.
 	*/
-	virtual void OnOrderUpdate(const Trade_OrderItem_HK& orderItem) = 0;
+	virtual void OnOrderUpdate(Trade_Env enEnv, const Trade_OrderItem_HK& orderItem) = 0;
 
 	/**
 	* 设置订单状态请求返回
 
+	* @param enEnv 交易环境(实盘交易或仿真交易).
 	* @param nCookie 请求时的Cookie.
 	* @param enSvrRet 服务器处理结果.
 	* @param nOrderID 订单号.
 	* @param nErrCode 错误码.
 	*/
-	virtual void OnSetOrderStatus(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode) = 0;
+	virtual void OnSetOrderStatus(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode) = 0;
 
 	/**
 	* 改单请求返回
 
+	* @param enEnv 交易环境(实盘交易或仿真交易).
 	* @param nCookie 请求时的Cookie.
 	* @param enSvrRet 服务器处理结果.
 	* @param nOrderID 订单号.
 	* @param nErrCode 错误码.
 	*/
-	virtual void OnChangeOrder(UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode) = 0;
+	virtual void OnChangeOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode) = 0;
 
 	/**
 	* 订单错误推送
 	
+	* @param enEnv 交易环境(实盘交易或仿真交易).
 	* @param nOrderID 订单号.
 	* @param enErrNotify 订单错误类型.
 	* @param nErrCode 错误码.
 	*/
-	virtual void OnOrderErrNotify(UINT64 nOrderID, Trade_OrderErrNotify_HK enErrNotify, UINT16 nErrCode) = 0;
+	virtual void OnOrderErrNotify(Trade_Env enEnv, UINT64 nOrderID, Trade_OrderErrNotify_HK enErrNotify, UINT16 nErrCode) = 0;
 };
