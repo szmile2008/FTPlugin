@@ -174,13 +174,13 @@ void CProtoPlaceOrder::GetProtoBodyField_Req(VT_PROTO_FIELD &vtField, const Prot
 		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_StringA,
 	};
 	static LPCSTR arFieldKey[] = {
-		"EnvType", "Cookie",	"OrderSide",	"OrderTypeHK",
+		"EnvType", "Cookie",	"OrderSide",	"OrderType",
 		"Price",	"Qty",			"StockCode",
 	};
 
 	ProtoReqBodyType &body = const_cast<ProtoReqBodyType &>(reqData);
 	void *arPtr[] = {		
-		&body.nEnvType, &body.nCookie,	&body.nOrderDir, &body.nOrderTypeHK,
+		&body.nEnvType, &body.nCookie,	&body.nOrderDir, &body.nOrderType,
 		&body.nPrice,	&body.nQty,		 &body.strCode,
 	};
 
@@ -228,7 +228,7 @@ void CProtoPlaceOrder::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const Prot
 		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int32, 
 	};
 	static LPCSTR arFieldKey[] = {
-		"nEnvType",		"Cookie",		"LocalID",		"SvrResult",
+		"EnvType",		"Cookie",		"LocalID",		"SvrResult",
 	};
 
 	ProtoAckBodyType &body = const_cast<ProtoAckBodyType &>(ackData);

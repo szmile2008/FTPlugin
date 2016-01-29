@@ -29,7 +29,7 @@ IFTPluginMoudle*  __stdcall GetFTPluginMoudle(int& nVerSupport)
 		ASSERT(g_pPluginModule != NULL);
 	}
 
-	nVerSupport = FTCore_Support_MinVer;
+	nVerSupport = FTCore_Support_Ver;
 	return g_pPluginModule;
 }
 
@@ -74,6 +74,7 @@ void CPluginModule::Init(IFTPluginCore* pPluginCore)
 
 	m_QuoteServer.InitQuoteSvr(pPluginCore, &m_Network);
 	m_HKTradeServer.InitTradeSvr(pPluginCore, &m_Network);
+	m_USTradeServer.InitTradeSvr(pPluginCore, &m_Network);
 }
 
 void CPluginModule::Uninit()
@@ -125,6 +126,17 @@ void  CPluginModule::GetPluginCallback_TradeHK(ITradeCallBack_HK** pCallback)
 	}
 
 	*pCallback = &m_HKTradeServer;
+}
+
+void  CPluginModule::GetPluginCallback_TradeUS(ITradeCallBack_US** pCallback)
+{
+	if ( pCallback == NULL )
+	{
+		ASSERT(false);
+		return ;
+	}
+
+	*pCallback = &m_USTradeServer;
 }
 
 void CPluginModule::OnReceive(SOCKET sock)
@@ -218,6 +230,10 @@ void CPluginModule::ParseRecvData(SOCKET sock, char *pBuf, int nBufLen)
 	else if ( nCmdID >= PROTO_ID_TRADE_HK_MIN && nCmdID <= PROTO_ID_TRADE_HK_MAX )
 	{
 		m_HKTradeServer.SetTradeReqData(nCmdID, jsnVal, sock);
+	}
+	else if ( nCmdID >= PROTO_ID_TRADE_US_MIN && nCmdID <= PROTO_ID_TRADE_US_MAX )
+	{
+		m_USTradeServer.SetTradeReqData(nCmdID, jsnVal, sock);
 	}
 	else
 	{

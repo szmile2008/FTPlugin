@@ -25,6 +25,7 @@ struct BasicPriceAckBody
 
 	int nStockMarket;
 	std::string strStockCode;
+	DWORD dwTime;
 };
 
 struct	BasicPrice_Req

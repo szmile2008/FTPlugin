@@ -7,12 +7,12 @@ class CProtoSetOrderStatus : public CProtoParseBase
 {
 public:
 	//tomodify 1
-	typedef SetOrderStatusHK_Req		ProtoReqDataType;
-	typedef SetOrderStatusHK_Ack		ProtoAckDataType;
+	typedef SetOrderStatus_Req		ProtoReqDataType;
+	typedef SetOrderStatus_Ack		ProtoAckDataType;
 
 	//tomodify 2
-	typedef SetOrderStatusHKReqBody	   ProtoReqBodyType;
-	typedef SetOrderStatusHKAckBody	   ProtoAckBodyType;
+	typedef SetOrderStatusReqBody	   ProtoReqBodyType;
+	typedef SetOrderStatusAckBody	   ProtoAckBodyType;
 
 
 public:

@@ -9,14 +9,17 @@ static const GUID IID_IFTQuoteData =
 static const GUID IID_IFTQuoteOperation = 
 { 0x9c65990c, 0x903, 0x4185, { 0x97, 0x12, 0x3e, 0xa7, 0xab, 0x34, 0xd, 0xc5 } };
 
-static const GUID IID_IFTTrade = 
+static const GUID IID_IFTTrade_HK = 
 { 0x69a88049, 0x252e, 0x4a12, { 0x83, 0x41, 0xdd, 0x4c, 0x6e, 0x84, 0x8b, 0x27 } };
 
+// {66C2E76D-8786-4bf0-9534-D2864D5309C6}
+static const GUID IID_IFTTrade_US = 
+{ 0x66c2e76d, 0x8786, 0x4bf0, { 0x95, 0x34, 0xd2, 0x86, 0x4d, 0x53, 0x9, 0xc6 } };
 
 /**
-* 该插件接口要求的FTCore 最低版本 
+* 该插件接口要求的FTCore匹配版本号
 */
-#define  FTCore_Support_MinVer  100 
+#define  FTCore_Support_Ver  104
 
 interface IFTPluginCore 
 { 
@@ -59,6 +62,7 @@ interface IFTPluginMoudle
 	*/
 	virtual void  GetPluginCallback_Quote(IQuoteInfoCallback** pCallback) = 0; 
 	virtual void  GetPluginCallback_TradeHK(ITradeCallBack_HK** pCallback) = 0; 
+	virtual void  GetPluginCallback_TradeUS(ITradeCallBack_US** pCallback) = 0; 
 }; 
 
 

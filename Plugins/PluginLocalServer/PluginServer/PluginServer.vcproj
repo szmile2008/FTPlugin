@@ -68,6 +68,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="uafxcwd.lib Libcmtd.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="uafxcwd.lib;Libcmtd.lib;"
 				ModuleDefinitionFile=".\PluginServer.def"
@@ -325,6 +326,22 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\DelayOrderIDCvt_HK.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DelayOrderIDCvt_HK.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DelayOrderIDCvt_US.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DelayOrderIDCvt_US.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PluginServer.cpp"
 				>
 			</File>
@@ -482,11 +499,27 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Protocol\ProtoQueryAccInfo.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryAccInfo.h"
+					>
+				</File>
+				<File
 					RelativePath=".\Protocol\ProtoSetOrderStatus.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\Protocol\ProtoSetOrderStatus.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoUnlockTrade.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoUnlockTrade.h"
 					>
 				</File>
 			</Filter>
@@ -555,14 +588,50 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="trade"
+				Name="trade_us"
 				>
 				<File
-					RelativePath=".\PluginChangeOrder.cpp"
+					RelativePath=".\PluginChangeOrder_US.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\PluginChangeOrder.h"
+					RelativePath=".\PluginChangeOrder_US.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginPlaceOrder_US.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginPlaceOrder_US.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginSetOrderStatus_US.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginSetOrderStatus_US.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginUSTradeServer.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginUSTradeServer.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="trade_hk"
+				>
+				<File
+					RelativePath=".\PluginChangeOrder_HK.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginChangeOrder_HK.h"
 					>
 				</File>
 				<File
@@ -574,19 +643,35 @@
 					>
 				</File>
 				<File
-					RelativePath=".\PluginPlaceOrder.cpp"
+					RelativePath=".\PluginPlaceOrder_HK.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\PluginPlaceOrder.h"
+					RelativePath=".\PluginPlaceOrder_HK.h"
 					>
 				</File>
 				<File
-					RelativePath=".\PluginSetOrderStatus.cpp"
+					RelativePath=".\PluginQueryAccInfo.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\PluginSetOrderStatus.h"
+					RelativePath=".\PluginQueryAccInfo.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginSetOrderStatus_HK.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginSetOrderStatus_HK.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginUnlockTrade.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginUnlockTrade.h"
 					>
 				</File>
 			</Filter>

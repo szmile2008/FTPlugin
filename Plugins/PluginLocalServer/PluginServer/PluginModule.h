@@ -4,6 +4,7 @@
 #include "Include/ITrade.h"
 #include "PluginQuoteServer.h"
 #include "PluginHKTradeServer.h"
+#include "PluginUSTradeServer.h"
 #include "PluginNetwork.h"
 #include "MsgHandler.h"
 
@@ -31,6 +32,7 @@ protected:
 	virtual void  GetPluginCallback_Quote(IQuoteInfoCallback** pCallback); 
 	virtual void  GetPluginCallback_TradeHK(ITradeCallBack_HK** pCallback); 
 
+	virtual void  GetPluginCallback_TradeUS(ITradeCallBack_US** pCallback);
 	//IPluginNetEvent
 	virtual void OnReceive(SOCKET sock);
 	virtual void OnSend(SOCKET sock);
@@ -46,6 +48,7 @@ protected:
 	IFTPluginCore*		m_pPluginCore;
 	CPluginQuoteServer	m_QuoteServer;
 	CPluginHKTradeServer m_HKTradeServer;
+	CPluginUSTradeServer m_USTradeServer;
 	CMsgHandler			m_MsgHandler;
 	CPluginNetwork		m_Network;
 	std::string			m_strRecvBuf;

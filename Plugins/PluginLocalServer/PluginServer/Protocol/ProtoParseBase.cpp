@@ -64,7 +64,7 @@ int	CProtoParseBase::GetProtoID(const Json::Value &jsnVal)
 bool CProtoParseBase::ParseProtoHead_Req(const Json::Value &jsnVal, ProtoHead &head)
 {
 	//将不用解析的项初始化
-	head.nErrCode = 0;
+	head.ddwErrCode = 0;
 	head.strErrDesc = "";
 
 	VT_PROTO_FIELD vtField;	
@@ -205,7 +205,7 @@ void CProtoParseBase::GetProtoHeadField_Ack(VT_PROTO_FIELD &vtField, const Proto
 	};
 	static EProtoFildType arFieldType[] = {
 		ProtoFild_Int32, ProtoFild_Int32, 
-		ProtoFild_Int32, ProtoFild_StringA,
+		ProtoFild_Int64, ProtoFild_StringA,
 	};
 	static LPCSTR arFieldKey[] = {
 		"Version",	"Protocol",		
@@ -215,7 +215,7 @@ void CProtoParseBase::GetProtoHeadField_Ack(VT_PROTO_FIELD &vtField, const Proto
 	ProtoHead &hd = const_cast<ProtoHead &>(head);
 	void *arPtr[] = {
 		&hd.nProtoVer,	&hd.nProtoID, 
-		&hd.nErrCode, &hd.strErrDesc,
+		&hd.ddwErrCode, &hd.strErrDesc,
 	};
 
 	CHECK_OP(_countof(arOptional) == _countof(arFieldType), NOOP);

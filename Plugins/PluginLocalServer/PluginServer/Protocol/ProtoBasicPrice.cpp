@@ -44,7 +44,7 @@ bool CProtoBasicPrice::ParseJson_Ack(const Json::Value &jsnVal)
 		bSuc &= ParseProtoHead_Ack(jsnVal, m_pAckData->head);
 		CHECK_OP(bSuc, break);
 
-		if ( m_pAckData->head.nErrCode == PROTO_ERR_NO_ERROR )
+		if ( m_pAckData->head.ddwErrCode == PROTO_ERR_NO_ERROR )
 		{
 			bSuc &= ParseProtoBody_Ack(jsnVal, *m_pAckData);
 			CHECK_OP(bSuc, break);
@@ -81,7 +81,7 @@ bool CProtoBasicPrice::MakeJson_Ack(Json::Value &jsnVal)
 		bSuc &= MakeProtoHead_Ack(jsnVal, m_pAckData->head);
 		CHECK_OP(bSuc, break);
 
-		if ( m_pAckData->head.nErrCode == PROTO_ERR_NO_ERROR )
+		if ( m_pAckData->head.ddwErrCode == PROTO_ERR_NO_ERROR )
 		{
 			bSuc &= MakeProtoBody_Ack(jsnVal, *m_pAckData);
 			CHECK_OP(bSuc, break);
@@ -221,19 +221,19 @@ void CProtoBasicPrice::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const Prot
 		FALSE, FALSE, FALSE,
 		FALSE, FALSE, FALSE,
 		FALSE, FALSE,
-		FALSE, FALSE,
+		FALSE, FALSE, FALSE,
 	};
 	static EProtoFildType arFieldType[] = {
 		ProtoFild_Int32, ProtoFild_Int32, ProtoFild_Int32, 
 		ProtoFild_Int32, ProtoFild_Int64, ProtoFild_Int64,
 		ProtoFild_Int32, ProtoFild_Int32,
-		ProtoFild_Int32, ProtoFild_StringA, 
+		ProtoFild_Int32, ProtoFild_StringA, ProtoFild_Int32
 	};
 	static LPCSTR arFieldKey[] = {
 		"High",	"Open",	"Low", 
 		"Close", "Vol", "Turnover",
 		"LastClose","Cur",
-		"Market",	"StockCode",
+		"Market",	"StockCode", "Time"
 	};
 
 	ProtoAckBodyType &body = const_cast<ProtoAckBodyType &>(ackData);
@@ -241,7 +241,7 @@ void CProtoBasicPrice::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const Prot
 		&body.nHigh,	&body.nOpen,	&body.nLow,
 		&body.nClose,	&body.nVolume,	&body.nTurnover,
 		&body.nLastClose,&body.nCur,
-		&body.nStockMarket,	&body.strStockCode,
+		&body.nStockMarket,	&body.strStockCode, &body.dwTime
 	};
 
 	CHECK_OP(_countof(arOptional) == _countof(arFieldType), NOOP);

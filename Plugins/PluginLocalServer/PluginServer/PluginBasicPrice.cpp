@@ -135,6 +135,7 @@ void CPluginBasicPrice::SetQuoteReqData(int nCmdID, const Json::Value &jsnVal, S
 			ack.nCur = price.dwCur;
 			ack.nTurnover = price.ddwTrunover;
 			ack.nVolume = price.ddwVolume;
+			ack.dwTime = price.dwTime;
 			m_mapCacheData[nStockID] = ack;
 		}
 	}
@@ -171,6 +172,7 @@ void CPluginBasicPrice::NotifyQuoteDataUpdate(int nCmdID, INT64 nStockID)
 		ack.nCur = price.dwCur;
 		ack.nTurnover = price.ddwTrunover;
 		ack.nVolume = price.ddwVolume;		
+		ack.dwTime = price.dwTime;
 		m_MsgHandler.RaiseEvent(EVENT_ID_ACK_REQUEST, 0, 0);
 	}
 }
@@ -352,7 +354,7 @@ void CPluginBasicPrice::ReplyStockDataReq(StockDataReq *pReq, const QuoteAckData
 
 	CProtoQuote::ProtoAckDataType ack;
 	ack.head = pReq->req.head;
-	ack.head.nErrCode = 0;
+	ack.head.ddwErrCode = 0;
 	ack.body = data;
 
 	//tomodify 4
@@ -382,7 +384,7 @@ void CPluginBasicPrice::ReplyDataReqError(StockDataReq *pReq, int nErrCode, LPCW
 
 	CProtoQuote::ProtoAckDataType ack;
 	ack.head = pReq->req.head;
-	ack.head.nErrCode = nErrCode;
+	ack.head.ddwErrCode = nErrCode;
 
 	if ( pErrDesc )
 	{

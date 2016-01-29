@@ -360,7 +360,7 @@ void CPluginGearPrice::ReplyStockDataReq(StockDataReq *pReq, const QuoteAckDataB
 
 	CProtoQuote::ProtoAckDataType ack;
 	ack.head = pReq->req.head;
-	ack.head.nErrCode = 0;
+	ack.head.ddwErrCode = 0;
 	ack.body = data;
 
 	//tomodify 4
@@ -394,7 +394,7 @@ void CPluginGearPrice::ReplyDataReqError(StockDataReq *pReq, int nErrCode, LPCWS
 
 	CProtoQuote::ProtoAckDataType ack;
 	ack.head = pReq->req.head;
-	ack.head.nErrCode = nErrCode;
+	ack.head.ddwErrCode = nErrCode;
 
 	if ( pErrDesc )
 	{

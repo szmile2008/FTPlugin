@@ -7,12 +7,12 @@ class CProtoPlaceOrder : public CProtoParseBase
 {
 public:
 	//tomodify 1
-	typedef PlaceOrderHK_Req		ProtoReqDataType;
-	typedef PlaceOrderHK_Ack		ProtoAckDataType;
+	typedef PlaceOrder_Req		ProtoReqDataType;
+	typedef PlaceOrder_Ack		ProtoAckDataType;
 
 	//tomodify 2
-	typedef PlaceOrderHKReqBody	   ProtoReqBodyType;
-	typedef PlaceOrderHKAckBody	   ProtoAckBodyType;
+	typedef PlaceOrderReqBody	   ProtoReqBodyType;
+	typedef PlaceOrderAckBody	   ProtoAckBodyType;
 
 
 public:

@@ -68,19 +68,19 @@ struct	OrderErrorPushHK_Ack
 
 
 //////////////////////////////////////////////////////////////////////////
-//下港股订单 PROTO_ID_TDHK_PLACE_ORDER
-struct	PlaceOrderHKReqBody
+//下订单 PROTO_ID_TDHK_PLACE_ORDER 
+struct	PlaceOrderReqBody
 {
 	int nEnvType;
 	int nCookie;
 	int nOrderDir;
-	int nOrderTypeHK;
+	int nOrderType;
 	int nPrice;
 	INT64 nQty;
 	std::string strCode;
 };
 
-struct PlaceOrderHKAckBody
+struct PlaceOrderAckBody
 {	
 	int nEnvType;
 	int nCookie;
@@ -88,77 +88,148 @@ struct PlaceOrderHKAckBody
 	int nSvrResult;	
 };
 
-struct	PlaceOrderHK_Req
+struct	PlaceOrder_Req
 {
 	ProtoHead			head;
-	PlaceOrderHKReqBody	body;
+	PlaceOrderReqBody	body;
 };
 
-struct	PlaceOrderHK_Ack
+struct	PlaceOrder_Ack
 {
 	ProtoHead				head;
-	PlaceOrderHKAckBody		body;
+	PlaceOrderAckBody		body;
 };
 
 
 //////////////////////////////////////////////////////////////////////////
-//设置港股订单状态 PROTO_ID_TDHK_SET_ORDER_STATUS
-struct	SetOrderStatusHKReqBody
+//设置订单状态 PROTO_ID_TDHK_SET_ORDER_STATUS
+struct	SetOrderStatusReqBody
 {
-	int nEnvType;
-	int nCookie;
-	int nSetOrderStatusHK;
-	INT64 nOrderID;
+	int		nEnvType;
+	int		nCookie;
+	int		nSetOrderStatus;
+	INT64	nSvrOrderID;
+	INT64	nLocalOrderID;
+
 };
 
-struct SetOrderStatusHKAckBody
+struct SetOrderStatusAckBody
 {	
-	int nEnvType;
-	int nCookie;
-	INT64 nOrderID;
+	int		nEnvType;
+	int		nCookie;
+	INT64	nSvrOrderID;
+	INT64	nLocalOrderID;
+	int		nSvrResult;	
+};
+
+struct	SetOrderStatus_Req
+{
+	ProtoHead				head;
+	SetOrderStatusReqBody	body;
+};
+
+struct	SetOrderStatus_Ack
+{
+	ProtoHead				head;
+	SetOrderStatusAckBody	body;
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//解锁交易
+struct UnlockTradeReqBody
+{
+	int			nCookie;
+	std::string strPasswd;
+};
+
+struct UnlockTradeAckBody
+{
+	int	nCookie;
 	int nSvrResult;	
 };
 
-struct	SetOrderStatusHK_Req
+struct UnlockTrade_Req
 {
 	ProtoHead				head;
-	SetOrderStatusHKReqBody	body;
+	UnlockTradeReqBody		body;
 };
 
-struct	SetOrderStatusHK_Ack
+struct UnlockTrade_Ack
 {
 	ProtoHead				head;
-	SetOrderStatusHKAckBody	body;
+	UnlockTradeAckBody		body;
 };
 
 
 //////////////////////////////////////////////////////////////////////////
 //港股改单 PROTO_ID_TDHK_CHANGE_ORDER
-struct	ChangeOrderHKReqBody
+struct	ChangeOrderReqBody
 {
-	int nEnvType;
-	int nCookie;
-	INT64 nOrderID;
-	int nPrice;
-	INT64 nQty;
+	int		nEnvType;
+	int		nCookie;
+	INT64	nSvrOrderID;
+	INT64	nLocalOrderID;
+	int		nPrice;
+	INT64	nQty;
 };
 
-struct ChangeOrderHKAckBody
+struct ChangeOrderAckBody
 {	
-	int nEnvType;
-	int nCookie;
-	INT64 nOrderID;
-	int nSvrResult;	
+	int		nEnvType;
+	int		nCookie;
+	INT64	nSvrOrderID;
+	INT64	nLocalOrderID;
+	int		nSvrResult;	
 };
 
-struct	ChangeOrderHK_Req
+struct	ChangeOrder_Req
 {
-	ProtoHead				head;
-	ChangeOrderHKReqBody	body;
+	ProtoHead			head;
+	ChangeOrderReqBody	body;
 };
 
-struct	ChangeOrderHK_Ack
+struct	ChangeOrder_Ack
 {
 	ProtoHead				head;
-	ChangeOrderHKAckBody	body;
+	ChangeOrderAckBody	body;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//获取用户帐户信息
+struct	QueryAccInfoReqBody
+{
+	int		nEnvType;
+	int		nCookie;	
+};
+
+struct QueryAccInfoAckBody
+{	
+	int		nEnvType;
+	int		nCookie;
+	
+	//以下与Trade_AccInfo同步
+	INT64 nPower; //购买力
+	INT64 nZcjz; //资产净值
+	INT64 nZqsz; //证券市值
+	INT64 nXjjy; //现金结余
+	INT64 nKqxj; //可取现金
+	INT64 nDjzj; //冻结资金
+	INT64 nZsje; //追收金额
+
+	INT64 nZgjde; //最高借贷额
+	INT64 nYyjde; //已用信贷额
+	INT64 nGpbzj; //股票保证金
+};
+
+struct	QueryAccInfo_Req
+{
+	ProtoHead			head;
+	QueryAccInfoReqBody	body;
+};
+
+struct	QueryAccInfo_Ack
+{
+	ProtoHead			head;
+	QueryAccInfoAckBody	body;
 };

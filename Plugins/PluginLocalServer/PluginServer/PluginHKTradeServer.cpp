@@ -37,7 +37,7 @@ void CPluginHKTradeServer::InitTradeSvr(IFTPluginCore* pPluginCore, CPluginNetwo
 
 	m_pNetwork = pNetwork;
 	m_pPluginCore = pPluginCore;
-	pPluginCore->QueryFTInterface(IID_IFTTrade, (void**)&m_pTradeOp);
+	pPluginCore->QueryFTInterface(IID_IFTTrade_HK, (void**)&m_pTradeOp);
 
 	if ( m_pTradeOp == NULL )
 	{
@@ -51,12 +51,16 @@ void CPluginHKTradeServer::InitTradeSvr(IFTPluginCore* pPluginCore, CPluginNetwo
 	m_PlaceOrder.Init(this, m_pTradeOp);
 	m_ChangeOrder.Init(this, m_pTradeOp);
 	m_SetOrderStatus.Init(this, m_pTradeOp);
+	m_UnlockTrade.Init(this, m_pTradeOp);
+	m_QueryAccInfo.Init(this, m_pTradeOp);
 }
 
 void CPluginHKTradeServer::UninitTradeSvr()
 {
 	if ( m_pPluginCore != NULL )
 	{
+		m_QueryAccInfo.Uninit();
+		m_UnlockTrade.Uninit();
 		m_PlaceOrder.Uninit();
 		m_ChangeOrder.Uninit();
 		m_SetOrderStatus.Uninit();
@@ -71,12 +75,12 @@ void CPluginHKTradeServer::SetTradeReqData(int nCmdID, const Json::Value &jsnVal
 {
 	switch (nCmdID)
 	{
-	case PROTO_ID_TDHK_PUSH_ORDER_UPDATE:
-		CHECK_OP(false, NOOP);
+	case PROTO_ID_TDHK_UNLOCK_TRADE:
+		m_UnlockTrade.SetTradeReqData(nCmdID, jsnVal, sock);
 		break;
 
-	case PROTO_ID_TDHK_PUSH_ORDER_ERROR:
-		CHECK_OP(false, NOOP);
+	case PROTO_ID_TDHK_QUERY_ACC_INFO:
+		m_QueryAccInfo.SetTradeReqData(nCmdID, jsnVal, sock);
 		break;
 
 	case PROTO_ID_TDHK_PLACE_ORDER:
@@ -104,45 +108,24 @@ void CPluginHKTradeServer::ReplyTradeReq(int nCmdID, const char *pBuf, int nLen,
 	m_pNetwork->SendData(sock, pBuf, nLen);
 }
 
+void CPluginHKTradeServer::OnUnlockTrade(UINT32 nCookie, Trade_SvrResult enSvrRet, UINT16 nErrCode)
+{
+	m_UnlockTrade.NotifyOnUnlockTrade(nCookie, enSvrRet, nErrCode);
+}
+
+void CPluginHKTradeServer::OnQueryAccInfo(Trade_Env enEnv, UINT32 nCookie, const Trade_AccInfo& accInfo)
+{
+	m_QueryAccInfo.NotifyOnQueryAccInfo(enEnv, nCookie, accInfo);
+}
+
 void CPluginHKTradeServer::OnPlaceOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode)
 {
 	m_PlaceOrder.NotifyOnPlaceOrder(enEnv, nCookie, enSvrRet, nLocalID, nErrCode);
 }
 
-void CPluginHKTradeServer::OnOrderUpdate(Trade_Env enEnv, const Trade_OrderItem_HK& orderItem)
-{
-	CHECK_RET(m_pNetwork, NORET);
-
-	OrderUpdatePushHK_Ack ack;
-	ack.head.nErrCode = 0;
-	ack.head.nProtoID = PROTO_ID_TDHK_PUSH_ORDER_UPDATE;
-	ack.head.nProtoVer = 1;
-
-	ack.body.nEnvType = enEnv;
-	ack.body.nLocalID = orderItem.nLocalID;
-	ack.body.nOrderID = orderItem.nOrderID;
-	ack.body.nOrderDir = orderItem.enSide;
-	ack.body.nOrderTypeHK = orderItem.enType;
-	ack.body.nOrderStatusHK = orderItem.enStatus;
-	ack.body.nPrice = (int)orderItem.nPrice;
-	ack.body.nQTY = orderItem.nQty;
-	ack.body.nDealQTY = orderItem.nDealtQty;
-	ack.body.nSubmitTime = (int)orderItem.nSubmitedTime;
-	ack.body.nUpdateTime = (int)orderItem.nUpdatedTime;
-
-	CA::Unicode2UTF(orderItem.szName, ack.body.strStockName);
-	CA::Unicode2UTF(orderItem.szCode, ack.body.strStockCode);	 
-
-	CProtoOrderUpdatePush proto;
-	proto.SetProtoData_Ack(&ack);
-
-	Json::Value jsnValue;
-	bool bRet = proto.MakeJson_Ack(jsnValue);
-	CHECK_RET(bRet, NORET);
-
-	std::string strBuf;
-	CProtoParseBase::ConvJson2String(jsnValue, strBuf, true);
-	m_pNetwork->PushData(strBuf.c_str(), (int)strBuf.size());
+void CPluginHKTradeServer::OnOrderUpdate(Trade_Env enEnv, const Trade_OrderItem& orderItem)
+{ 
+ 
 }
 
 void CPluginHKTradeServer::OnSetOrderStatus(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode)
@@ -152,35 +135,10 @@ void CPluginHKTradeServer::OnSetOrderStatus(Trade_Env enEnv, UINT nCookie, Trade
 
 void CPluginHKTradeServer::OnChangeOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, UINT16 nErrCode)
 {
-	m_ChangeOrder.NotifyOnPlaceOrder(enEnv, nCookie, enSvrRet, nOrderID, nErrCode);
+	m_ChangeOrder.NotifyOnChangeOrder(enEnv, nCookie, enSvrRet, nOrderID, nErrCode);
 }
 
 void CPluginHKTradeServer::OnOrderErrNotify(Trade_Env enEnv, UINT64 nOrderID, Trade_OrderErrNotify_HK enErrNotify, UINT16 nErrCode)
 {
-	CHECK_RET(m_pNetwork && m_pTradeOp, NORET);
-
-	OrderErrorPushHK_Ack ack;
-	ack.head.nErrCode = 0;
-	ack.head.nProtoID = PROTO_ID_TDHK_PUSH_ORDER_ERROR;
-	ack.head.nProtoVer = 1;
-
-	ack.body.nEnvType = enEnv;
-	ack.body.nOrderID = nOrderID;
-	ack.body.nOrderErrNotifyHK = enErrNotify;
-	ack.body.nOrderErrCode = nErrCode;
-
-	wchar_t szErrDesc[256] = L"";
-	m_pTradeOp->GetErrDesc(nErrCode, szErrDesc);
-	CA::Unicode2UTF(szErrDesc, ack.body.strOrderErrDesc);
-	
-	CProtoOrderErrorPush proto;
-	proto.SetProtoData_Ack(&ack);
-
-	Json::Value jsnValue;
-	bool bRet = proto.MakeJson_Ack(jsnValue);
-	CHECK_RET(bRet, NORET);
-
-	std::string strBuf;
-	CProtoParseBase::ConvJson2String(jsnValue, strBuf, true);
-	m_pNetwork->PushData(strBuf.c_str(), (int)strBuf.size());
+	 
 }

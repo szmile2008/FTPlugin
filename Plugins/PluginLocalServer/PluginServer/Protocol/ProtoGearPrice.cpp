@@ -44,7 +44,7 @@ bool CProtoGearPrice::ParseJson_Ack(const Json::Value &jsnVal)
 		bSuc &= ParseProtoHead_Ack(jsnVal, m_pAckData->head);
 		CHECK_OP(bSuc, break);
 
-		if ( m_pAckData->head.nErrCode == PROTO_ERR_NO_ERROR )
+		if ( m_pAckData->head.ddwErrCode == PROTO_ERR_NO_ERROR )
 		{
 			bSuc &= ParseProtoBody_Ack(jsnVal, *m_pAckData);
 			CHECK_OP(bSuc, break);
@@ -81,7 +81,7 @@ bool CProtoGearPrice::MakeJson_Ack(Json::Value &jsnVal)
 		bSuc &= MakeProtoHead_Ack(jsnVal, m_pAckData->head);
 		CHECK_OP(bSuc, break);
 
-		if ( m_pAckData->head.nErrCode == PROTO_ERR_NO_ERROR )
+		if ( m_pAckData->head.ddwErrCode == PROTO_ERR_NO_ERROR )
 		{
 			bSuc &= MakeProtoBody_Ack(jsnVal, *m_pAckData);
 			CHECK_OP(bSuc, break);

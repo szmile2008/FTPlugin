@@ -227,7 +227,7 @@ void CProtoOrderUpdatePush::GetProtoBodyField_Ack(VT_PROTO_FIELD &vtField, const
 	};
 	static LPCSTR arFieldKey[] = {
 		"EnvType",		"LocalID",		"OrderID",		"OrderSide", 
-		"OrderTypeHK",	"OrderStatusHK","StockName",
+		"OrderType",	"OrderStatus","StockName",
 		"Price",		"Qty",			"DealtQty",
 		"SubmitTime",	"UpdateTime",	"StockCode",
 	};
