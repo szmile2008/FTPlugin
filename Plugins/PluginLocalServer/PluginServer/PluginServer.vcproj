@@ -499,11 +499,51 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Protocol\ProtoQueryAccInfo.cpp"
+					RelativePath=".\Protocol\ProtoQueryHKAccInfo.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\Protocol\ProtoQueryAccInfo.h"
+					RelativePath=".\Protocol\ProtoQueryHKAccInfo.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryHKOrder.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryHKOrder.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryHKPosition.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryHKPosition.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryUSAccInfo.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryUSAccInfo.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryUSOrder.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryUSOrder.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryUSPosition.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Protocol\ProtoQueryUSPosition.h"
 					>
 				</File>
 				<File
@@ -607,6 +647,30 @@
 					>
 				</File>
 				<File
+					RelativePath=".\PluginQueryUSAccInfo.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryUSAccInfo.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryUSOrder.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryUSOrder.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryUSPosition.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryUSPosition.h"
+					>
+				</File>
+				<File
 					RelativePath=".\PluginSetOrderStatus_US.cpp"
 					>
 				</File>
@@ -651,11 +715,27 @@
 					>
 				</File>
 				<File
-					RelativePath=".\PluginQueryAccInfo.cpp"
+					RelativePath=".\PluginQueryHKAccInfo.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\PluginQueryAccInfo.h"
+					RelativePath=".\PluginQueryHKAccInfo.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryHKOrder.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryHKOrder.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryHKPosition.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginQueryHKPosition.h"
 					>
 				</File>
 				<File

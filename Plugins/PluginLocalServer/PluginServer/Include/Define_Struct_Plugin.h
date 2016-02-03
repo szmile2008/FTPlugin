@@ -19,7 +19,7 @@ static const GUID IID_IFTTrade_US =
 /**
 * 该插件接口要求的FTCore匹配版本号
 */
-#define  FTCore_Support_Ver  104
+#define  FTCore_Support_Ver  105
 
 interface IFTPluginCore 
 { 

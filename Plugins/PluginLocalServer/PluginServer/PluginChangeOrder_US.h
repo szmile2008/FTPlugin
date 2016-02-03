@@ -20,7 +20,7 @@ public:
 	void Uninit();	
 	void SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock);
 	void NotifyOnChangeOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, 
-		UINT64 nLocalID, UINT16 nErrCode);
+		UINT64 nLocalID, INT64 nErrCode);
 
 protected:
 	//CTimerWndInterface 

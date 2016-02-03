@@ -48,6 +48,9 @@ void CPluginUSTradeServer::InitTradeSvr(IFTPluginCore* pPluginCore, CPluginNetwo
 		return;
 	}	
 
+	m_QueryPos.Init(this, m_pTradeOp);
+	m_QueryUSAcc.Init(this, m_pTradeOp);
+	m_QueryUSOrder.Init(this, m_pTradeOp);
 	m_PlaceOrder.Init(this, m_pTradeOp);
 	m_ChangeOrder.Init(this, m_pTradeOp);
 	m_SetOrderStatus.Init(this, m_pTradeOp);
@@ -57,6 +60,9 @@ void CPluginUSTradeServer::UninitTradeSvr()
 {
 	if ( m_pPluginCore != NULL )
 	{
+		m_QueryPos.Uninit();
+		m_QueryUSAcc.Uninit();
+		m_QueryUSOrder.Uninit();
 		m_PlaceOrder.Uninit();
 		m_ChangeOrder.Uninit();
 		m_SetOrderStatus.Uninit();
@@ -81,6 +87,18 @@ void CPluginUSTradeServer::SetTradeReqData(int nCmdID, const Json::Value &jsnVal
 
 	case PROTO_ID_TDUS_CHANGE_ORDER:
 		m_ChangeOrder.SetTradeReqData(nCmdID, jsnVal, sock);
+		break;
+
+	case PROTO_ID_TDUS_QUERY_ORDER:
+		m_QueryUSOrder.SetTradeReqData(nCmdID, jsnVal, sock);
+		break;
+
+	case PROTO_ID_TDUS_QUERY_ACC_INFO:
+		m_QueryUSAcc.SetTradeReqData(nCmdID, jsnVal, sock);
+		break;
+
+	case PROTO_ID_TDUS_QUERY_POSITION:
+		m_QueryPos.SetTradeReqData(nCmdID, jsnVal, sock);
 		break;
 
 	default:
@@ -116,3 +134,17 @@ void CPluginUSTradeServer::OnChangeOrder(UINT32 nCookie, Trade_SvrResult enSvrRe
 	m_ChangeOrder.NotifyOnChangeOrder(Trade_Env_Real, nCookie, enSvrRet, nOrderID, nErrHash);
 }
  
+void CPluginUSTradeServer::OnQueryOrderList(UINT32 nCookie, INT32 nCount, const Trade_OrderItem* pArrOrder)
+{
+	m_QueryUSOrder.NotifyOnQueryUSOrder(nCookie, nCount, pArrOrder);
+}
+
+void CPluginUSTradeServer::OnQueryAccInfo(UINT32 nCookie, const Trade_AccInfo& accInfo)
+{
+	m_QueryUSAcc.NotifyOnQueryUSAccInfo(Trade_Env_Real, nCookie, accInfo);
+}
+
+void CPluginUSTradeServer::OnQueryPositionList( UINT32 nCookie, INT32 nCount, const Trade_PositionItem* pArrPosition )
+{
+	m_QueryPos.NotifyOnQueryPosition(Trade_Env_Real, nCookie, nCount, pArrPosition);
+}

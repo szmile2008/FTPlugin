@@ -163,7 +163,7 @@ void  CPluginChangeOrder_US::DoTryProcessTradeOpt(StockDataReq* pReq)
 } 
 
 void CPluginChangeOrder_US::NotifyOnChangeOrder(Trade_Env enEnv, UINT nCookie, 
-												Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode)
+												Trade_SvrResult enSvrRet, UINT64 nLocalID, INT64 nErrCode)
 {
 	CHECK_RET(nCookie, NORET);
 	CHECK_RET(m_pTradeOp && m_pTradeServer, NORET);

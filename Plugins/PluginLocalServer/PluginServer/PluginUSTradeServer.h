@@ -7,6 +7,9 @@
 #include "PluginPlaceOrder_US.h"
 #include "PluginChangeOrder_US.h"
 #include "PluginSetOrderStatus_US.h"
+#include "PluginQueryUSOrder.h"
+#include "PluginQueryUSAccInfo.h"
+#include "PluginQueryUSPosition.h"
 
 class CPluginNetwork;
 
@@ -31,9 +34,9 @@ protected:
 	virtual void OnChangeOrder(UINT32 nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, INT64 nErrHash);
 
 	//virtual void OnOrderErrNotify(Trade_Env enEnv, UINT64 nOrderID, Trade_OrderErrNotify_HK enErrNotify, UINT16 nErrCode);
-	virtual void OnQueryOrderList(UINT32 nCookie, INT32 nCount, const Trade_OrderItem* pArrOrder) {}
-	virtual void OnQueryAccInfo(UINT32 nCookie, const Trade_AccInfo& accInfo){}
-	virtual void OnQueryPositionList(UINT32 nCookie, INT32 nCount, const Trade_PositionItem* pArrPosition){}
+	virtual void OnQueryOrderList(UINT32 nCookie, INT32 nCount, const Trade_OrderItem* pArrOrder);
+	virtual void OnQueryAccInfo(UINT32 nCookie, const Trade_AccInfo& accInfo);
+	virtual void OnQueryPositionList(UINT32 nCookie, INT32 nCount, const Trade_PositionItem* pArrPosition);
 
 protected:
 	IFTPluginCore		*m_pPluginCore;
@@ -42,4 +45,7 @@ protected:
 	CPluginPlaceOrder_US	m_PlaceOrder;
 	CPluginChangeOrder_US  m_ChangeOrder;
 	CPluginSetOrderStatus_US m_SetOrderStatus;
+	CPluginQueryUSOrder		m_QueryUSOrder;
+	CPluginQueryUSAccInfo	m_QueryUSAcc;
+	CPluginQueryUSPosition	m_QueryPos;
 };

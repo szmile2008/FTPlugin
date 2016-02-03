@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "PluginSetOrderStatus_US.h"
+#include "PluginQueryUSPosition.h"
 #include "PluginUSTradeServer.h"
-#include "Protocol/ProtoSetOrderStatus.h"
+#include "Protocol/ProtoQueryUSPosition.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -11,26 +11,24 @@
 #define EVENT_ID_ACK_REQUEST		368
 
 //tomodify 2
-#define PROTO_ID_QUOTE			PROTO_ID_TDUS_SET_ORDER_STATUS
-typedef CProtoSetOrderStatus	CProtoQuote;
-
-
+#define PROTO_ID_QUOTE		PROTO_ID_TDUS_QUERY_POSITION
+typedef CProtoQueryUSPosition	CProtoQuote;
 
 //////////////////////////////////////////////////////////////////////////
 
-CPluginSetOrderStatus_US::CPluginSetOrderStatus_US()
+CPluginQueryUSPosition::CPluginQueryUSPosition()
 {	
 	m_pTradeOp = NULL;
 	m_pTradeServer = NULL;
 	m_bStartTimerHandleTimeout = FALSE;
 }
 
-CPluginSetOrderStatus_US::~CPluginSetOrderStatus_US()
+CPluginQueryUSPosition::~CPluginQueryUSPosition()
 {
 	Uninit();
 }
 
-void CPluginSetOrderStatus_US::Init(CPluginUSTradeServer* pTradeServer, ITrade_US*  pTradeOp)
+void CPluginQueryUSPosition::Init(CPluginUSTradeServer* pTradeServer, ITrade_US*  pTradeOp)
 {
 	if ( m_pTradeServer != NULL )
 		return;
@@ -48,11 +46,9 @@ void CPluginSetOrderStatus_US::Init(CPluginUSTradeServer* pTradeServer, ITrade_U
 
 	m_MsgHandler.SetEventInterface(this);
 	m_MsgHandler.Create();
-
-	m_stOrderIDCvt.Init(m_pTradeOp, this);
 }
 
-void CPluginSetOrderStatus_US::Uninit()
+void CPluginQueryUSPosition::Uninit()
 {
 	if ( m_pTradeServer != NULL )
 	{
@@ -69,11 +65,11 @@ void CPluginSetOrderStatus_US::Uninit()
 	}
 }
 
-void CPluginSetOrderStatus_US::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock)
+void CPluginQueryUSPosition::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock)
 {
 	CHECK_RET(nCmdID == PROTO_ID_QUOTE && sock != INVALID_SOCKET, NORET);
 	CHECK_RET(m_pTradeOp && m_pTradeServer, NORET);
-
+	
 	CProtoQuote proto;
 	CProtoQuote::ProtoReqDataType	req;
 	proto.SetProtoData_Req(&req);
@@ -84,54 +80,18 @@ void CPluginSetOrderStatus_US::SetTradeReqData(int nCmdID, const Json::Value &js
 	}
 
 	CHECK_RET(req.head.nProtoID == nCmdID && req.body.nCookie, NORET);
-	SetOrderStatusReqBody &body = req.body;		
 
 	StockDataReq *pReq = new StockDataReq;
 	CHECK_RET(pReq, NORET);
 	pReq->sock = sock;
 	pReq->dwReqTick = ::GetTickCount();
-	pReq->req = req;
-	pReq->bWaitDelaySvrID = true; 
+	pReq->req = req;	
+	
+	m_vtReqData.push_back(pReq);
 
-	DoTryProcessTradeOpt(pReq); 
-}
-
-
-void  CPluginSetOrderStatus_US::DoTryProcessTradeOpt(StockDataReq* pReq)
-{
-	CHECK_RET(m_pTradeOp && pReq, NORET); 
-
-	bool bIsNewReq = !IsReqDataExist(pReq); 
-
-	SetOrderStatusReqBody &body = pReq->req.body;
-	TradeReqType& req = pReq->req; 
-	SOCKET sock = pReq->sock; 
-
-	//如果是新的调用， 通过本地id查找定单SvrID 
-	if (bIsNewReq)
-	{
-		m_vtReqData.push_back(pReq); 
-
-		if (0 == body.nSvrOrderID && 0 != body.nLocalOrderID) 
-		{ 
-			body.nSvrOrderID = m_stOrderIDCvt.FindSvrOrderID((Trade_Env)body.nEnvType, 
-				body.nLocalOrderID, true);	
-
-			// 等待svrid 取到后再实际调用接口
-			if (0 == body.nSvrOrderID)
-			{ 
-				return; 
-			}
-		} 
-	} 
-	// 
-	bool bRet = false; 
-	//美股只支持撤单， 只有真实交易环境!!
-	if (body.nSvrOrderID != 0 && body.nSetOrderStatus == 0 && body.nEnvType == Trade_Env_Real)
-	{  
-		pReq->bWaitDelaySvrID = false;
-		bRet = m_pTradeOp->CancelOrder((UINT*)&pReq->dwLocalCookie, body.nSvrOrderID);
-	} 
+	//tomodify 3
+	QueryPositionReqBody &body = req.body;	
+	bool bRet = m_pTradeOp->QueryPositionList((UINT32*)&pReq->dwLocalCookie);
 
 	if ( !bRet )
 	{
@@ -140,23 +100,35 @@ void  CPluginSetOrderStatus_US::DoTryProcessTradeOpt(StockDataReq* pReq)
 		ack.head.ddwErrCode = PROTO_ERR_UNKNOWN_ERROR;
 		CA::Unicode2UTF(L"发送失败", ack.head.strErrDesc);
 
+		memset(&ack.body, 0, sizeof(ack.body));
 		ack.body.nEnvType = body.nEnvType;
-		ack.body.nCookie = body.nCookie;
-		ack.body.nLocalOrderID = body.nLocalOrderID;
-		ack.body.nSvrOrderID = body.nSvrOrderID;
-
-		ack.body.nSvrResult = Trade_SvrResult_Failed;
+		ack.body.nCookie = body.nCookie;		
 		HandleTradeAck(&ack, sock);
 
-		//清除req对象 
-		DoRemoveReqData(pReq);
+		DoDeleteReqData(pReq);
+
 		return ;
 	}
-
 	SetTimerHandleTimeout(true);
-} 
+}
 
-void CPluginSetOrderStatus_US::NotifyOnSetOrderStatus(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nOrderID, INT64 nErrCode)
+bool CPluginQueryUSPosition::DoDeleteReqData(StockDataReq* pReq)
+{
+	VT_REQ_TRADE_DATA::iterator it = m_vtReqData.end();
+	while (it != m_vtReqData.end())
+	{
+		if (*it  == pReq)
+		{ 
+			SAFE_DELETE(pReq);
+			it = m_vtReqData.erase(it);
+			return true; 
+		}
+		++it;
+	}
+	return false;
+}
+
+void CPluginQueryUSPosition::NotifyOnQueryPosition(Trade_Env enEnv, UINT32 nCookie, INT32 nCount, const Trade_PositionItem* pArrPosition)
 {
 	CHECK_RET(nCookie, NORET);
 	CHECK_RET(m_pTradeOp && m_pTradeServer, NORET);
@@ -176,32 +148,55 @@ void CPluginSetOrderStatus_US::NotifyOnSetOrderStatus(Trade_Env enEnv, UINT nCoo
 	if (!pFindReq)
 		return;
 
-	CHECK_RET(pFindReq, NORET);
-
 	TradeAckType ack;
 	ack.head = pFindReq->req.head;
-	ack.head.ddwErrCode = nErrCode;
-	if ( nErrCode )
-	{
-		WCHAR szErr[256] = L"";
-		if ( m_pTradeOp->GetErrDescV2(nErrCode, szErr) )
-			CA::Unicode2UTF(szErr, ack.head.strErrDesc);
-	}
+	ack.head.ddwErrCode = PROTO_ERR_NO_ERROR;
+// 	if ( nErrCode )
+// 	{
+// 		WCHAR szErr[256] = L"";
+// 		if ( m_pTradeOp->GetErrDescV2(nErrCode, szErr) )
+// 			CA::Unicode2UTF(szErr, ack.head.strErrDesc);
+// 	}
 
 	//tomodify 4
 	ack.body.nEnvType = enEnv;
 	ack.body.nCookie = pFindReq->req.body.nCookie;
-	ack.body.nSvrOrderID = pFindReq->req.body.nSvrOrderID;
-	ack.body.nLocalOrderID = pFindReq->req.body.nLocalOrderID; 
 
-	ack.body.nSvrResult = enSvrRet;
+	if ( nCount > 0 && pArrPosition )
+	{
+		for ( int n = 0; n < nCount; n++ )
+		{			
+			const Trade_PositionItem &pos = pArrPosition[n];
+			QueryPositionAckItem item;
+			item.strStockCode = pos.szCode;
+			item.strStockName = pos.szName;
+			item.nQty = pos.nQty;
+			item.nCanSellQty = pos.nCanSellQty;
+			item.nNominalPrice = pos.nNominalPrice;
+			item.nMarketVal = pos.nMarketVal;
+			item.nCostPrice = int(pos.fCostPrice * 1000);
+			item.nCostPriceValid = pos.bCostPriceValid;
+			item.nPLVal = pos.nPLVal;
+			item.nPLValValid = pos.bPLValValid;
+			item.nPLRatio = int(pos.fPLRatio * 100000);
+			item.nPLRatioValid = pos.bPLRatioValid;
+			
+			item.nToday_PLVal = pos.nToday_PLVal;
+			item.nToday_BuyQty = pos.nToday_BuyQty;
+			item.nToday_BuyVal = pos.nToday_BuyVal;
+			item.nToday_SellQty = pos.nToday_SellQty;
+			item.nToday_SellVal = pos.nToday_SellVal;
+			ack.body.vtPosition.push_back(item);
+		}
+	}	 
+	
 	HandleTradeAck(&ack, pFindReq->sock);
 
 	m_vtReqData.erase(itReq);
 	delete pFindReq;
 }
 
-void CPluginSetOrderStatus_US::OnTimeEvent(UINT nEventID)
+void CPluginQueryUSPosition::OnTimeEvent(UINT nEventID)
 {
 	if ( TIMER_ID_HANDLE_TIMEOUT_REQ == nEventID )
 	{
@@ -209,14 +204,14 @@ void CPluginSetOrderStatus_US::OnTimeEvent(UINT nEventID)
 	}
 }
 
-void CPluginSetOrderStatus_US::OnMsgEvent(int nEvent,WPARAM wParam,LPARAM lParam)
+void CPluginQueryUSPosition::OnMsgEvent(int nEvent,WPARAM wParam,LPARAM lParam)
 {
 	if ( EVENT_ID_ACK_REQUEST == nEvent )
 	{		
 	}	
 }
 
-void CPluginSetOrderStatus_US::HandleTimeoutReq()
+void CPluginQueryUSPosition::HandleTimeoutReq()
 {
 	if ( m_vtReqData.empty() )
 	{
@@ -244,14 +239,12 @@ void CPluginSetOrderStatus_US::HandleTimeoutReq()
 			CA::Unicode2UTF(L"协议超时", ack.head.strErrDesc);
 
 			//tomodify 5
+			memset(&ack.body, 0, sizeof(ack.body));
 			ack.body.nEnvType = pReq->req.body.nEnvType;
-			ack.body.nCookie = pReq->req.body.nCookie;
-			ack.body.nSvrOrderID = pReq->req.body.nSvrOrderID;
-			ack.body.nLocalOrderID = pReq->req.body.nLocalOrderID;
-
-			ack.body.nSvrResult = Trade_SvrResult_Failed;
+			ack.body.nCookie = pReq->req.body.nCookie;			
+			
 			HandleTradeAck(&ack, pReq->sock);
-
+			
 			it_req = m_vtReqData.erase(it_req);
 			delete pReq;
 		}
@@ -268,7 +261,7 @@ void CPluginSetOrderStatus_US::HandleTimeoutReq()
 	}
 }
 
-void CPluginSetOrderStatus_US::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
+void CPluginQueryUSPosition::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
 {
 	CHECK_RET(pAck && pAck->body.nCookie && sock != INVALID_SOCKET, NORET);
 	CHECK_RET(m_pTradeServer, NORET);
@@ -279,13 +272,13 @@ void CPluginSetOrderStatus_US::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
 	Json::Value jsnValue;
 	bool bRet = proto.MakeJson_Ack(jsnValue);
 	CHECK_RET(bRet, NORET);
-
+	
 	std::string strBuf;
 	CProtoParseBase::ConvJson2String(jsnValue, strBuf, true);
 	m_pTradeServer->ReplyTradeReq(PROTO_ID_QUOTE, strBuf.c_str(), (int)strBuf.size(), sock);
 }
 
-void CPluginSetOrderStatus_US::SetTimerHandleTimeout(bool bStartOrStop)
+void CPluginQueryUSPosition::SetTimerHandleTimeout(bool bStartOrStop)
 {
 	if ( m_bStartTimerHandleTimeout )
 	{
@@ -305,7 +298,7 @@ void CPluginSetOrderStatus_US::SetTimerHandleTimeout(bool bStartOrStop)
 	}
 }
 
-void CPluginSetOrderStatus_US::ClearAllReqAckData()
+void CPluginQueryUSPosition::ClearAllReqAckData()
 {
 	VT_REQ_TRADE_DATA::iterator it_req = m_vtReqData.begin();
 	for ( ; it_req != m_vtReqData.end(); )
@@ -315,61 +308,4 @@ void CPluginSetOrderStatus_US::ClearAllReqAckData()
 	}
 
 	m_vtReqData.clear();
-}
-
-
-bool CPluginSetOrderStatus_US::IsReqDataExist( StockDataReq* pReq )
-{
-	VT_REQ_TRADE_DATA::iterator it = m_vtReqData.begin();
-	while (it != m_vtReqData.end())
-	{
-		StockDataReq* pItem = *it;
-		if (pItem && pItem == pReq) 
-		{ 
-			return true; 
-		}
-		++it; 
-	}
-	return false; 
-}
-
-void CPluginSetOrderStatus_US::DoRemoveReqData(StockDataReq* pReq)
-{
-	VT_REQ_TRADE_DATA::iterator it = m_vtReqData.begin();
-	while (it != m_vtReqData.end())
-	{
-		StockDataReq* pItem = *it;
-		if (pItem && pItem == pReq) 
-		{ 
-			it = m_vtReqData.erase(it);
-			SAFE_DELETE(pItem); 
-			return; 
-		}
-		++it; 
-	}
-}
-
-void CPluginSetOrderStatus_US::OnCvtOrderID_Local2Svr( int nResult, Trade_Env eEnv, 
-													  INT64 nLocalID, INT64 nServerID )
-{
-	VT_REQ_TRADE_DATA vtTmp = m_vtReqData;
-
-	VT_REQ_TRADE_DATA::iterator it = vtTmp.begin();
-	while (it != vtTmp.end())
-	{
-		StockDataReq* pItem = *it; 
-		if (!pItem)
-			continue;
-
-		if (pItem->req.body.nEnvType == eEnv && pItem->req.body.nLocalOrderID == nLocalID)
-		{ 
-			if (0 == pItem->req.body.nSvrOrderID)
-				pItem->req.body.nSvrOrderID = nServerID;  
-			else 
-				CHECK_OP(false, NOOP); 
-
-			DoTryProcessTradeOpt(pItem);
-		}
-		++it; 
-	}
 }

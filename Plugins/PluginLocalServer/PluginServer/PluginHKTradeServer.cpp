@@ -53,12 +53,16 @@ void CPluginHKTradeServer::InitTradeSvr(IFTPluginCore* pPluginCore, CPluginNetwo
 	m_SetOrderStatus.Init(this, m_pTradeOp);
 	m_UnlockTrade.Init(this, m_pTradeOp);
 	m_QueryAccInfo.Init(this, m_pTradeOp);
+	m_QueryHKOrder.Init(this, m_pTradeOp);
+	m_QueryHKPos.Init(this, m_pTradeOp);
 }
 
 void CPluginHKTradeServer::UninitTradeSvr()
 {
 	if ( m_pPluginCore != NULL )
 	{
+		m_QueryHKPos.Uninit();
+		m_QueryHKOrder.Uninit();
 		m_QueryAccInfo.Uninit();
 		m_UnlockTrade.Uninit();
 		m_PlaceOrder.Uninit();
@@ -81,6 +85,14 @@ void CPluginHKTradeServer::SetTradeReqData(int nCmdID, const Json::Value &jsnVal
 
 	case PROTO_ID_TDHK_QUERY_ACC_INFO:
 		m_QueryAccInfo.SetTradeReqData(nCmdID, jsnVal, sock);
+		break;
+
+	case PROTO_ID_TDHK_QUERY_ORDER:
+		m_QueryHKOrder.SetTradeReqData(nCmdID, jsnVal, sock);
+		break;
+
+	case PROTO_ID_TDHK_QUERY_POSITION:
+		m_QueryHKPos.SetTradeReqData(nCmdID, jsnVal, sock);
 		break;
 
 	case PROTO_ID_TDHK_PLACE_ORDER:
@@ -113,9 +125,19 @@ void CPluginHKTradeServer::OnUnlockTrade(UINT32 nCookie, Trade_SvrResult enSvrRe
 	m_UnlockTrade.NotifyOnUnlockTrade(nCookie, enSvrRet, nErrCode);
 }
 
+void CPluginHKTradeServer::OnQueryOrderList(Trade_Env enEnv, UINT32 nCookie, INT32 nCount, const Trade_OrderItem* pArrOrder)
+{
+	m_QueryHKOrder.NotifyOnQueryHKOrder(enEnv, nCookie, nCount, pArrOrder);
+}
+
+void CPluginHKTradeServer::OnQueryPositionList(Trade_Env enEnv, UINT32 nCookie, INT32 nCount, const Trade_PositionItem* pArrPosition)
+{
+	m_QueryHKPos.NotifyOnQueryPosition(enEnv, nCookie, nCount, pArrPosition);
+}
+
 void CPluginHKTradeServer::OnQueryAccInfo(Trade_Env enEnv, UINT32 nCookie, const Trade_AccInfo& accInfo)
 {
-	m_QueryAccInfo.NotifyOnQueryAccInfo(enEnv, nCookie, accInfo);
+	m_QueryAccInfo.NotifyOnQueryHKAccInfo(enEnv, nCookie, accInfo);
 }
 
 void CPluginHKTradeServer::OnPlaceOrder(Trade_Env enEnv, UINT nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, UINT16 nErrCode)

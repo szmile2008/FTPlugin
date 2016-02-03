@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "PluginPlaceOrder_US.h"
-#include "PluginUSTradeServer.h"
-#include "Protocol/ProtoPlaceOrder.h"
+#include "PluginQueryHKPosition.h"
+#include "PluginHKTradeServer.h"
+#include "Protocol/ProtoQueryHKPosition.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -11,26 +11,24 @@
 #define EVENT_ID_ACK_REQUEST		368
 
 //tomodify 2
-#define PROTO_ID_QUOTE		PROTO_ID_TDUS_PLACE_ORDER
-typedef CProtoPlaceOrder	CProtoQuote;
-
-
+#define PROTO_ID_QUOTE		PROTO_ID_TDHK_QUERY_POSITION
+typedef CProtoQueryHKPosition	CProtoQuote;
 
 //////////////////////////////////////////////////////////////////////////
 
-CPluginPlaceOrder_US::CPluginPlaceOrder_US()
+CPluginQueryHKPosition::CPluginQueryHKPosition()
 {	
 	m_pTradeOp = NULL;
 	m_pTradeServer = NULL;
 	m_bStartTimerHandleTimeout = FALSE;
 }
 
-CPluginPlaceOrder_US::~CPluginPlaceOrder_US()
+CPluginQueryHKPosition::~CPluginQueryHKPosition()
 {
 	Uninit();
 }
 
-void CPluginPlaceOrder_US::Init(CPluginUSTradeServer* pTradeServer, ITrade_US*  pTradeOp)
+void CPluginQueryHKPosition::Init(CPluginHKTradeServer* pTradeServer, ITrade_HK*  pTradeOp)
 {
 	if ( m_pTradeServer != NULL )
 		return;
@@ -50,7 +48,7 @@ void CPluginPlaceOrder_US::Init(CPluginUSTradeServer* pTradeServer, ITrade_US*  
 	m_MsgHandler.Create();
 }
 
-void CPluginPlaceOrder_US::Uninit()
+void CPluginQueryHKPosition::Uninit()
 {
 	if ( m_pTradeServer != NULL )
 	{
@@ -67,7 +65,7 @@ void CPluginPlaceOrder_US::Uninit()
 	}
 }
 
-void CPluginPlaceOrder_US::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock)
+void CPluginQueryHKPosition::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock)
 {
 	CHECK_RET(nCmdID == PROTO_ID_QUOTE && sock != INVALID_SOCKET, NORET);
 	CHECK_RET(m_pTradeOp && m_pTradeServer, NORET);
@@ -88,19 +86,12 @@ void CPluginPlaceOrder_US::SetTradeReqData(int nCmdID, const Json::Value &jsnVal
 	pReq->sock = sock;
 	pReq->dwReqTick = ::GetTickCount();
 	pReq->req = req;	
+	
+	m_vtReqData.push_back(pReq);
 
 	//tomodify 3
-	PlaceOrderReqBody &body = req.body;
-	std::wstring strCode;
-	CA::UTF2Unicode(body.strCode.c_str(), strCode);
-
-	bool bRet = false;
-	//目前只支持美股实盘
-	if (pReq->req.body.nEnvType == Trade_Env_Real)
-	{
-		bRet = m_pTradeOp->PlaceOrder((UINT*)&pReq->dwLocalCookie, (Trade_OrderType_US)body.nOrderType, 
-			(Trade_OrderSide)body.nOrderDir, strCode.c_str(), body.nPrice, body.nQty);
-	} 
+	QueryPositionReqBody &body = req.body;	
+	bool bRet = m_pTradeOp->QueryPositionList((Trade_Env)body.nEnvType, (UINT32*)&pReq->dwLocalCookie);
 
 	if ( !bRet )
 	{
@@ -109,21 +100,35 @@ void CPluginPlaceOrder_US::SetTradeReqData(int nCmdID, const Json::Value &jsnVal
 		ack.head.ddwErrCode = PROTO_ERR_UNKNOWN_ERROR;
 		CA::Unicode2UTF(L"发送失败", ack.head.strErrDesc);
 
+		memset(&ack.body, 0, sizeof(ack.body));
 		ack.body.nEnvType = body.nEnvType;
-		ack.body.nCookie = body.nCookie;
-		ack.body.nLocalID = 0;
-		ack.body.nSvrResult = Trade_SvrResult_Failed;
+		ack.body.nCookie = body.nCookie;		
 		HandleTradeAck(&ack, sock);
 
-		delete pReq;
-		pReq = NULL;
+		DoDeleteReqData(pReq);
+
 		return ;
 	}
-
-	m_vtReqData.push_back(pReq);
 	SetTimerHandleTimeout(true);
 }
-void CPluginPlaceOrder_US::NotifyOnPlaceOrder(Trade_Env enEnv, UINT32 nCookie, Trade_SvrResult enSvrRet, UINT64 nLocalID, INT64 nErrCode)
+
+bool CPluginQueryHKPosition::DoDeleteReqData(StockDataReq* pReq)
+{
+	VT_REQ_TRADE_DATA::iterator it = m_vtReqData.end();
+	while (it != m_vtReqData.end())
+	{
+		if (*it  == pReq)
+		{ 
+			SAFE_DELETE(pReq);
+			it = m_vtReqData.erase(it);
+			return true; 
+		}
+		++it;
+	}
+	return false;
+}
+
+void CPluginQueryHKPosition::NotifyOnQueryPosition(Trade_Env enEnv, UINT32 nCookie, INT32 nCount, const Trade_PositionItem* pArrPosition)
 {
 	CHECK_RET(nCookie, NORET);
 	CHECK_RET(m_pTradeOp && m_pTradeServer, NORET);
@@ -140,33 +145,58 @@ void CPluginPlaceOrder_US::NotifyOnPlaceOrder(Trade_Env enEnv, UINT32 nCookie, T
 			break;
 		}
 	}
- 
 	if (!pFindReq)
 		return;
 
 	TradeAckType ack;
 	ack.head = pFindReq->req.head;
-	ack.head.ddwErrCode = nErrCode;
-	if ( nErrCode )
-	{
-		WCHAR szErr[256] = L"";
-		if ( m_pTradeOp->GetErrDescV2(nErrCode, szErr) )
-			CA::Unicode2UTF(szErr, ack.head.strErrDesc);
-	}
+	ack.head.ddwErrCode = PROTO_ERR_NO_ERROR;
+// 	if ( nErrCode )
+// 	{
+// 		WCHAR szErr[256] = L"";
+// 		if ( m_pTradeOp->GetErrDescV2(nErrCode, szErr) )
+// 			CA::Unicode2UTF(szErr, ack.head.strErrDesc);
+// 	}
 
 	//tomodify 4
 	ack.body.nEnvType = enEnv;
 	ack.body.nCookie = pFindReq->req.body.nCookie;
-	ack.body.nLocalID = nLocalID;
-	ack.body.nSvrResult = enSvrRet;
 
+	if ( nCount > 0 && pArrPosition )
+	{
+		for ( int n = 0; n < nCount; n++ )
+		{			
+			const Trade_PositionItem &pos = pArrPosition[n];
+			QueryPositionAckItem item;
+			item.strStockCode = pos.szCode;
+			item.strStockName = pos.szName;
+			item.nQty = pos.nQty;
+			item.nCanSellQty = pos.nCanSellQty;
+			item.nNominalPrice = pos.nNominalPrice;
+			item.nMarketVal = pos.nMarketVal;
+			item.nCostPrice = int(pos.fCostPrice * 1000);
+			item.nCostPriceValid = pos.bCostPriceValid;
+			item.nPLVal = pos.nPLVal;
+			item.nPLValValid = pos.bPLValValid;
+			item.nPLRatio = int(pos.fPLRatio * 100000);
+			item.nPLRatioValid = pos.bPLRatioValid;
+			
+			item.nToday_PLVal = pos.nToday_PLVal;
+			item.nToday_BuyQty = pos.nToday_BuyQty;
+			item.nToday_BuyVal = pos.nToday_BuyVal;
+			item.nToday_SellQty = pos.nToday_SellQty;
+			item.nToday_SellVal = pos.nToday_SellVal;
+			ack.body.vtPosition.push_back(item);
+		}
+	}	 
+	
 	HandleTradeAck(&ack, pFindReq->sock);
 
 	m_vtReqData.erase(itReq);
 	delete pFindReq;
 }
 
-void CPluginPlaceOrder_US::OnTimeEvent(UINT nEventID)
+void CPluginQueryHKPosition::OnTimeEvent(UINT nEventID)
 {
 	if ( TIMER_ID_HANDLE_TIMEOUT_REQ == nEventID )
 	{
@@ -174,14 +204,14 @@ void CPluginPlaceOrder_US::OnTimeEvent(UINT nEventID)
 	}
 }
 
-void CPluginPlaceOrder_US::OnMsgEvent(int nEvent,WPARAM wParam,LPARAM lParam)
+void CPluginQueryHKPosition::OnMsgEvent(int nEvent,WPARAM wParam,LPARAM lParam)
 {
 	if ( EVENT_ID_ACK_REQUEST == nEvent )
 	{		
 	}	
 }
 
-void CPluginPlaceOrder_US::HandleTimeoutReq()
+void CPluginQueryHKPosition::HandleTimeoutReq()
 {
 	if ( m_vtReqData.empty() )
 	{
@@ -208,11 +238,11 @@ void CPluginPlaceOrder_US::HandleTimeoutReq()
 			ack.head.ddwErrCode= PROTO_ERR_SERVER_TIMEROUT;
 			CA::Unicode2UTF(L"协议超时", ack.head.strErrDesc);
 
-			//tomodify 
+			//tomodify 5
+			memset(&ack.body, 0, sizeof(ack.body));
 			ack.body.nEnvType = pReq->req.body.nEnvType;
-			ack.body.nCookie = pReq->req.body.nCookie;
-			ack.body.nSvrResult = Trade_SvrResult_Failed;
-			ack.body.nLocalID = 0;
+			ack.body.nCookie = pReq->req.body.nCookie;			
+			
 			HandleTradeAck(&ack, pReq->sock);
 			
 			it_req = m_vtReqData.erase(it_req);
@@ -231,7 +261,7 @@ void CPluginPlaceOrder_US::HandleTimeoutReq()
 	}
 }
 
-void CPluginPlaceOrder_US::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
+void CPluginQueryHKPosition::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
 {
 	CHECK_RET(pAck && pAck->body.nCookie && sock != INVALID_SOCKET, NORET);
 	CHECK_RET(m_pTradeServer, NORET);
@@ -248,7 +278,7 @@ void CPluginPlaceOrder_US::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
 	m_pTradeServer->ReplyTradeReq(PROTO_ID_QUOTE, strBuf.c_str(), (int)strBuf.size(), sock);
 }
 
-void CPluginPlaceOrder_US::SetTimerHandleTimeout(bool bStartOrStop)
+void CPluginQueryHKPosition::SetTimerHandleTimeout(bool bStartOrStop)
 {
 	if ( m_bStartTimerHandleTimeout )
 	{
@@ -268,7 +298,7 @@ void CPluginPlaceOrder_US::SetTimerHandleTimeout(bool bStartOrStop)
 	}
 }
 
-void CPluginPlaceOrder_US::ClearAllReqAckData()
+void CPluginQueryHKPosition::ClearAllReqAckData()
 {
 	VT_REQ_TRADE_DATA::iterator it_req = m_vtReqData.begin();
 	for ( ; it_req != m_vtReqData.end(); )
