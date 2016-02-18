@@ -77,7 +77,7 @@ g_s.connect((host,port))
 
 def fun_TestTrade(args=[]):
     print "enter fun testTrade ..."
-    req1 = {'Protocol':'6003','ReqParam':{'EnvType':'1', 'Cookie':'8888','OrderSide':'0','OrderTypeHK':'0','Price':'150000','Qty':'100','StockCode':'00700'},'Version':'1'}
+    req1 = {'Protocol':'6003','ReqParam':{'EnvType':'1', 'Cookie':'8888','OrderSide':'0','OrderType':'0','Price':'150000','Qty':'100','StockCode':'00700'},'Version':'1'}
     global g_buy, g_lid, g_sid, g_end
     if g_buy == 0:
         str = json.dumps(req1) + "\r\n"

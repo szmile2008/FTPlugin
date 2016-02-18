@@ -81,7 +81,7 @@ class Futu():
 		if market == "hk":
 			req = {'Cookie':'123456',\
 				'OrderSide':'0',\
-				'OrderTypeHK':'0',\
+				'OrderType':'0',\
 				'Price':str(int(math.floor(price * 1000))),\
 				'Qty': str(amount),\
 				'StockCode':str(stockcode),\
@@ -92,7 +92,7 @@ class Futu():
 		if market == "hk":
 			req = {'Cookie':'123456',\
 				'OrderSide':'1',\
-				'OrderTypeHK':'0',\
+				'OrderType':'0',\
 				'Price':str(int(math.floor(price * 1000))),\
 				'Qty': str(amount),\
 				'StockCode':str(stockcode),\
@@ -127,7 +127,7 @@ class Futu():
 		  if market == 'hk':
 		  	req = {'Cookie':'123456',\
 		  		'OrderID':str(order_id),\
-		  		'SetOrderStatusHK':'0',\
+		  		'SetOrderStatus':'0',\
 		  		'EnvType':str(envtype),\
 		  	}
 		  data = self.__socket_call(6004,req)

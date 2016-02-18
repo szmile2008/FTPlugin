@@ -104,7 +104,7 @@ COOKIE = 8888
 #传入:套接字, 交易环境(0:真实,1:仿真), 交易方向(0:买,1:卖), 交易类型, 交易价格, 交易数量, 股票代码
 def place_order(socket_futu_api, evn_type, order_side, order_type, price, qty, stock_code):
 	global COOKIE
-	req_param = {"EnvType":str(evn_type), "Cookie":str(COOKIE), "OrderSide":str(order_side), "OrderTypeHK":str(order_type), "Price":str(price), "Qty":str(qty), "StockCode":stock_code}
+	req_param = {"EnvType":str(evn_type), "Cookie":str(COOKIE), "OrderSide":str(order_side), "OrderType":str(order_type), "Price":str(price), "Qty":str(qty), "StockCode":stock_code}
 	COOKIE += 1
 	
 	analyzed_rsps_arr = send_req_and_get_rsp(socket_futu_api, "6003", req_param, 1)

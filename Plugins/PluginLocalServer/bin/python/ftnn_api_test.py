@@ -41,7 +41,7 @@ print rsp
 print "test trade buy 0700\n"
 print "-------------------------------------"
 #发送交易请求
-req = {'Protocol':'6003','ReqParam':{'Cookie':'123456','OrderSide':'0','OrderTypeHK':'1','Price':'150','Qty':'22200','StockCode':'00700'},'Version':'1'}
+req = {'Protocol':'6003','ReqParam':{'Cookie':'123456','OrderSide':'0','OrderType':'1','Price':'150','Qty':'22200','StockCode':'00700'},'Version':'1'}
 str = json.dumps(req) + "\n"
 print str
 s.send(str) 
