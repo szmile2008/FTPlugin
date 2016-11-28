@@ -141,12 +141,12 @@ void  CPluginModule::GetPluginCallback_TradeUS(ITradeCallBack_US** pCallback)
 
 void CPluginModule::OnReceive(SOCKET sock)
 {
-	m_MsgHandler.RaiseEvent(EVENT_ID_ON_RECEIVE_DATA, sock, 0);
+	m_MsgHandler.SendEvent(EVENT_ID_ON_RECEIVE_DATA, sock, 0);
 }
 
 void CPluginModule::OnSend(SOCKET sock)
 {
-	m_MsgHandler.RaiseEvent(EVENT_ID_ON_SEND_DATA, 0, 0);
+	//m_MsgHandler.SendEvent(EVENT_ID_ON_SEND_DATA, 0, 0);
 }
 
 void CPluginModule::OnMsgEvent(int nEvent,WPARAM wParam,LPARAM lParam)

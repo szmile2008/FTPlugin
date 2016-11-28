@@ -84,6 +84,22 @@ void CMsgHandler::RaiseEvent(int nEvent,WPARAM wParam,LPARAM lParam)
 	}
 }
 
+void CMsgHandler::SendEvent(int nEvent,WPARAM wParam,LPARAM lParam)
+{
+	if (!GetSafeHwnd())
+		return;
+
+	if(m_pEventInterface)
+	{
+		tagEventMsgData* pEvent = new tagEventMsgData;
+		pEvent->nEvent = nEvent;
+		pEvent->wParam = wParam;
+		pEvent->lParam = lParam; 
+
+		SendMessage(WM_EVENT_MESSAGE,0,(LPARAM)pEvent);
+	}
+}
+
 LRESULT CMsgHandler::OnEventMessage(WPARAM wParam,LPARAM lParam)
 {
 	if(lParam != 0)

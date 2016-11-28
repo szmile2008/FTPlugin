@@ -26,6 +26,7 @@ public:
 	void	Close();
 	void	SetEventInterface(CMsgHandlerEventInterface* pInterface);
 	void	RaiseEvent(int nEvent,WPARAM wParam,LPARAM lParam);
+	void	SendEvent(int nEvent,WPARAM wParam,LPARAM lParam);
 
 protected:
 	afx_msg LRESULT OnEventMessage(WPARAM wParam,LPARAM lParam);

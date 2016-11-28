@@ -21,6 +21,8 @@ enum StockMktType
 	StockMkt_US = 2,  //美股
 	StockMkt_SH = 3,  //沪股
 	StockMkt_SZ = 4,  //深股
+	StockMkt_Feature_Old = 5,  //旧的期货 code: 999000, 999001 （旧期货分时数据在一天连续）
+	StockMkt_Feature_New = 6,  //新期货 code: 999010, 999011 （新期货分时数据会跨天，与传统软件保持一致）
 }; 
 
 enum StockSubErrCode

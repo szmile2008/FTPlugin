@@ -6,9 +6,8 @@
 #define new DEBUG_NEW
 #endif
 
-#define TIMEOUT_MILISECONDS		50
-#define MIN_BUF_ALLOC_SIZE		1024
-
+#define TIMEOUT_MILISECONDS		5
+#define MIN_BUF_ALLOC_SIZE		1024*1024
 
 CPluginNetwork::CPluginNetwork()
 {
@@ -265,24 +264,32 @@ void  CPluginNetwork::SetNewConnectSocket(SOCKET sock)
 	m_vtConnSock.push_back(sock);
 	lock.Unlock();
 	
-	SockRuntimeInfo *pRTSend = new SockRuntimeInfo;
-	if ( pRTSend )
+	//lock
 	{
-		pRTSend->sock = sock;
-		pRTSend->hEventHandle = WSACreateEvent();
-		pRTSend->overlap.hEvent = pRTSend->hEventHandle;
-		CSingleLock lock(&m_csSend, TRUE);
-		m_mapSendingInfo[sock] = pRTSend;
+		CSingleLock lock(&m_csSend, TRUE);	
+		SockRuntimeInfo *pRTSend = new SockRuntimeInfo;
+		if ( pRTSend )
+		{
+			pRTSend->sock = sock;
+			pRTSend->hEventHandle = WSACreateEvent();
+			pRTSend->overlap.hEvent = pRTSend->hEventHandle;
+			CSingleLock lock(&m_csSend, TRUE);
+			m_mapSendingInfo[sock] = pRTSend;
+		}
 	}
-
-	SockRuntimeInfo *pRTRecv = new SockRuntimeInfo;
-	if ( pRTRecv )
+	
+	//lock
 	{
-		pRTRecv->sock = sock;
-		pRTRecv->hEventHandle = WSACreateEvent();
-		pRTRecv->overlap.hEvent = pRTRecv->hEventHandle;
-		CSingleLock lock(&m_csRecv, TRUE);
-		m_mapRecvingInfo[sock] = pRTRecv;
+		CSingleLock lock(&m_csRecv, TRUE);	
+		SockRuntimeInfo *pRTRecv = new SockRuntimeInfo;
+		if ( pRTRecv )
+		{
+			pRTRecv->sock = sock;
+			pRTRecv->hEventHandle = WSACreateEvent();
+			pRTRecv->overlap.hEvent = pRTRecv->hEventHandle;
+			CSingleLock lock(&m_csRecv, TRUE);
+			m_mapRecvingInfo[sock] = pRTRecv;
+		}
 	}
 }
 
@@ -462,8 +469,17 @@ void CPluginNetwork::ClearSocketRecvData(SOCKET sock)
 
 void CPluginNetwork::ClearAllSockRTInfo()
 {
-	ClearSockRTInfo(m_mapSendingInfo);
-	ClearSockRTInfo(m_mapRecvingInfo);
+	//lock
+	{
+		CSingleLock lock(&m_csSend, TRUE);
+		ClearSockRTInfo(m_mapSendingInfo);
+	}
+	
+	//lock
+	{
+		CSingleLock lock(&m_csRecv, TRUE);
+		ClearSockRTInfo(m_mapRecvingInfo);
+	}
 }
 
 void CPluginNetwork::ClearSockRTInfo(MAP_SOCK_RTINFO &mapRTInfo)
@@ -567,6 +583,8 @@ void CPluginNetwork::AccpetLoop()
 			m_hThreadAccept = NULL;
 			return;
 		}
+		//切换线程
+		Sleep(0);
 
 		ClearClosedSocket();
 
@@ -619,6 +637,8 @@ void CPluginNetwork::SendLoop()
 			m_hThreadSend = NULL;
 			return;
 		}
+		//切换线程
+		Sleep(0);
 
 		//投递新数据
 		CSingleLock lock(&m_csSend, TRUE);
@@ -682,7 +702,6 @@ void CPluginNetwork::SendLoop()
 				vtSocket.push_back(sock);
 			}
 		}
-
 		lock.Unlock();
 
 		if ( vtEvent.empty() )
@@ -700,6 +719,8 @@ void CPluginNetwork::SendLoop()
 		{
 			continue;
 		}
+		//切换线程
+		Sleep(0);
 		
 		//处理发送完成的数据
 		int nIndex = dwRet - WSA_WAIT_EVENT_0;
@@ -738,10 +759,10 @@ void CPluginNetwork::SendLoop()
 
 		//清理及通知		
 		FreeSendFinishBuf(sock);
+		lock.Unlock();
+
 		if ( m_pEvtNotify )
 			m_pEvtNotify->OnSend(sock);
-
-		lock.Unlock();
 	}
 }
 
@@ -763,6 +784,8 @@ void CPluginNetwork::RecvLoop()
 			m_hThreadRecv = NULL;
 			return;
 		}
+		//切换线程
+		Sleep(0);
 
 		//投递新的接收请求
 		CSingleLock lock(&m_csRecv, TRUE);
@@ -854,6 +877,8 @@ void CPluginNetwork::RecvLoop()
 		{
 			continue;
 		}		
+		//切换线程
+		Sleep(0);
 
 		//处理接收到的
 		int nIndex = dwRet - WSA_WAIT_EVENT_0;
@@ -903,7 +928,6 @@ void CPluginNetwork::RecvLoop()
 			}
 			vtFinishData.clear();
 		}
-
 		lock.Unlock();
 
 		//通知
