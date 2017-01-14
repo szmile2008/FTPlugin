@@ -4,3 +4,5 @@
 3. 将config.ini, pluginserver.dll  copy 到ftnn安装目录下的plugin子目录 
 4. python/ftnn_api_test.py 是一个python调用范例， 建议在python2.7及以上版本运行
 
+安装包：
+1. 因安装包过大， 请加“PC牛牛抢先体验群 438919070”　或　“FUTU 开放API群 108534288" 下载
