@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "PluginQueryAccInfo.h"
+#include "PluginQueryHKDeal.h"
 #include "PluginHKTradeServer.h"
-#include "Protocol/ProtoQueryAccInfo.h"
+#include "Protocol/ProtoQueryHKDeal.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -11,24 +11,24 @@
 #define EVENT_ID_ACK_REQUEST		368
 
 //tomodify 2
-#define PROTO_ID_QUOTE		PROTO_ID_TDHK_QUERY_ACC_INFO
-typedef CProtoQueryAccInfo	CProtoQuote;
+#define PROTO_ID_QUOTE		PROTO_ID_TDHK_QUERY_DEAL
+typedef CProtoQueryHKDeal	CProtoQuote;
 
 //////////////////////////////////////////////////////////////////////////
 
-CPluginQueryAccInfo::CPluginQueryAccInfo()
+CPluginQueryHKDeal::CPluginQueryHKDeal()
 {	
 	m_pTradeOp = NULL;
 	m_pTradeServer = NULL;
 	m_bStartTimerHandleTimeout = FALSE;
 }
 
-CPluginQueryAccInfo::~CPluginQueryAccInfo()
+CPluginQueryHKDeal::~CPluginQueryHKDeal()
 {
 	Uninit();
 }
 
-void CPluginQueryAccInfo::Init(CPluginHKTradeServer* pTradeServer, ITrade_HK*  pTradeOp)
+void CPluginQueryHKDeal::Init(CPluginHKTradeServer* pTradeServer, ITrade_HK*  pTradeOp)
 {
 	if ( m_pTradeServer != NULL )
 		return;
@@ -48,7 +48,7 @@ void CPluginQueryAccInfo::Init(CPluginHKTradeServer* pTradeServer, ITrade_HK*  p
 	m_MsgHandler.Create();
 }
 
-void CPluginQueryAccInfo::Uninit()
+void CPluginQueryHKDeal::Uninit()
 {
 	if ( m_pTradeServer != NULL )
 	{
@@ -65,7 +65,7 @@ void CPluginQueryAccInfo::Uninit()
 	}
 }
 
-void CPluginQueryAccInfo::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock)
+void CPluginQueryHKDeal::SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock)
 {
 	CHECK_RET(nCmdID == PROTO_ID_QUOTE && sock != INVALID_SOCKET, NORET);
 	CHECK_RET(m_pTradeOp && m_pTradeServer, NORET);
@@ -76,6 +76,12 @@ void CPluginQueryAccInfo::SetTradeReqData(int nCmdID, const Json::Value &jsnVal,
 	if ( !proto.ParseJson_Req(jsnVal) )
 	{
 		CHECK_OP(false, NORET);
+		TradeAckType ack;
+		ack.head = req.head;
+		ack.head.ddwErrCode = PROTO_ERR_PARAM_ERR;
+		CA::Unicode2UTF(L"²ÎÊý´íÎó£¡", ack.head.strErrDesc);
+		ack.body.nCookie = req.body.nCookie;
+		HandleTradeAck(&ack, sock);
 		return;
 	}
 
@@ -90,8 +96,8 @@ void CPluginQueryAccInfo::SetTradeReqData(int nCmdID, const Json::Value &jsnVal,
 	m_vtReqData.push_back(pReq);
 
 	//tomodify 3
-	QueryAccInfoReqBody &body = req.body;	
-	bool bRet = m_pTradeOp->QueryAccInfo((Trade_Env)body.nEnvType, (UINT32*)&pReq->dwLocalCookie);
+	QueryHKDealReqBody &body = req.body;	
+	bool bRet = m_pTradeOp->QueryDealList((Trade_Env)body.nEnvType, (UINT32*)&pReq->dwLocalCookie);
 
 	if ( !bRet )
 	{
@@ -112,7 +118,7 @@ void CPluginQueryAccInfo::SetTradeReqData(int nCmdID, const Json::Value &jsnVal,
 	SetTimerHandleTimeout(true);
 }
 
-bool CPluginQueryAccInfo::DoDeleteReqData(StockDataReq* pReq)
+bool CPluginQueryHKDeal::DoDeleteReqData(StockDataReq* pReq)
 {
 	VT_REQ_TRADE_DATA::iterator it = m_vtReqData.end();
 	while (it != m_vtReqData.end())
@@ -128,7 +134,7 @@ bool CPluginQueryAccInfo::DoDeleteReqData(StockDataReq* pReq)
 	return false;
 }
 
-void CPluginQueryAccInfo::NotifyOnQueryAccInfo(Trade_Env enEnv, UINT32 nCookie, const Trade_AccInfo& accInfo)
+void CPluginQueryHKDeal::NotifyOnQueryHKDeal(Trade_Env enEnv, UINT32 nCookie, INT32 nCount, const Trade_DealItem* pArrDeal)
 {
 	CHECK_RET(nCookie, NORET);
 	CHECK_RET(m_pTradeOp && m_pTradeServer, NORET);
@@ -162,17 +168,23 @@ void CPluginQueryAccInfo::NotifyOnQueryAccInfo(Trade_Env enEnv, UINT32 nCookie, 
 	ack.body.nEnvType = enEnv;
 	ack.body.nCookie = pFindReq->req.body.nCookie;
 
-	ack.body.nPower = accInfo.nPower;
-	ack.body.nZcjz = accInfo.nZcjz;
-	ack.body.nZqsz = accInfo.nZqsz;
-	ack.body.nXjjy = accInfo.nXjjy;
-	ack.body.nKqxj = accInfo.nKqxj;
-	ack.body.nDjzj = accInfo.nDjzj;
-	ack.body.nZsje = accInfo.nZsje;
-
-	ack.body.nZgjde = accInfo.nZgjde;
-	ack.body.nYyjde = accInfo.nYyjde;
-	ack.body.nGpbzj = accInfo.nGpbzj;
+	if ( nCount > 0 && pArrDeal )
+	{
+		for ( int n = 0; n < nCount; n++ )
+		{			
+			const Trade_DealItem &deal = pArrDeal[n];
+			QueryHKDealAckItem item;
+			item.nOrderID = deal.nOrderID;
+			item.nDealID = deal.nDealID;
+			item.enSide = deal.enSide;
+			item.strStockCode = deal.szCode;
+			item.strStockName = deal.szName;
+			item.nPrice = deal.nPrice;
+			item.nQty = deal.nQty;
+			item.nTime = deal.nTime;
+			ack.body.vtDeal.push_back(item);
+		}
+	}	 
 	
 	HandleTradeAck(&ack, pFindReq->sock);
 
@@ -180,7 +192,7 @@ void CPluginQueryAccInfo::NotifyOnQueryAccInfo(Trade_Env enEnv, UINT32 nCookie, 
 	delete pFindReq;
 }
 
-void CPluginQueryAccInfo::OnTimeEvent(UINT nEventID)
+void CPluginQueryHKDeal::OnTimeEvent(UINT nEventID)
 {
 	if ( TIMER_ID_HANDLE_TIMEOUT_REQ == nEventID )
 	{
@@ -188,14 +200,14 @@ void CPluginQueryAccInfo::OnTimeEvent(UINT nEventID)
 	}
 }
 
-void CPluginQueryAccInfo::OnMsgEvent(int nEvent,WPARAM wParam,LPARAM lParam)
+void CPluginQueryHKDeal::OnMsgEvent(int nEvent,WPARAM wParam,LPARAM lParam)
 {
 	if ( EVENT_ID_ACK_REQUEST == nEvent )
 	{		
 	}	
 }
 
-void CPluginQueryAccInfo::HandleTimeoutReq()
+void CPluginQueryHKDeal::HandleTimeoutReq()
 {
 	if ( m_vtReqData.empty() )
 	{
@@ -245,7 +257,7 @@ void CPluginQueryAccInfo::HandleTimeoutReq()
 	}
 }
 
-void CPluginQueryAccInfo::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
+void CPluginQueryHKDeal::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
 {
 	CHECK_RET(pAck && pAck->body.nCookie && sock != INVALID_SOCKET, NORET);
 	CHECK_RET(m_pTradeServer, NORET);
@@ -262,7 +274,7 @@ void CPluginQueryAccInfo::HandleTradeAck(TradeAckType *pAck, SOCKET sock)
 	m_pTradeServer->ReplyTradeReq(PROTO_ID_QUOTE, strBuf.c_str(), (int)strBuf.size(), sock);
 }
 
-void CPluginQueryAccInfo::SetTimerHandleTimeout(bool bStartOrStop)
+void CPluginQueryHKDeal::SetTimerHandleTimeout(bool bStartOrStop)
 {
 	if ( m_bStartTimerHandleTimeout )
 	{
@@ -282,7 +294,7 @@ void CPluginQueryAccInfo::SetTimerHandleTimeout(bool bStartOrStop)
 	}
 }
 
-void CPluginQueryAccInfo::ClearAllReqAckData()
+void CPluginQueryHKDeal::ClearAllReqAckData()
 {
 	VT_REQ_TRADE_DATA::iterator it_req = m_vtReqData.begin();
 	for ( ; it_req != m_vtReqData.end(); )

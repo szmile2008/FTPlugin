@@ -34,6 +34,8 @@ enum Trade_OrderSide
 {
 	Trade_OrderSide_Buy = 0, //买入
 	Trade_OrderSide_Sell = 1, //卖出
+	Trade_OrderSide_SellShort = 2, //卖空(目前仅美股)
+	Trade_OrderSide_BuyBack = 3, //卖空补回(目前仅美股)
 };
 
 enum Trade_OrderStatus
@@ -105,7 +107,7 @@ enum Trade_OrderType_US
 	Trade_OrderType_US_PostMarket = 52 //盘后交易，限价
 };
 
-//订单、账户、持仓数据结构
+//订单、成交记录、账户、持仓数据结构
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Trade_OrderItem
 {
@@ -131,6 +133,24 @@ struct Trade_OrderItem
 	//只支持港股调用GetErrDesc传nErrCode来得到错误描述，后续请都调用GetErrDescV2传nErrCode或nErrDescStrHash
 	UINT16 nErrCode; //错误码，仅支持港股
 	INT64 nErrDescStrHash; //错误描述字符串的hash
+};
+
+struct Trade_DealItem
+{
+	//特别提醒！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+	//交易API中价格、金额类的数据若为浮点型，即是原始数据没有被放大；若是整型，则是浮点值×1000，即最小单位是0.001元
+
+	UINT64 nOrderID; //订单号，服务器产生的订单真正的ID
+	UINT64 nDealID; //成交号
+
+	Trade_OrderSide enSide; //方向
+
+	WCHAR szCode[16]; //代码
+	WCHAR szName[128]; //名称
+	UINT64 nPrice; //成交价格
+	UINT64 nQty; //成交数量
+
+	UINT64 nTime;	//成交时间
 };
 
 struct Trade_AccInfo
@@ -180,6 +200,12 @@ struct Trade_PositionItem
 
 //港股交易API调用/回调接口定义
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ *	港股交易接口 ITrade_HK, 插件宿主实现，插件通过查询IFTPluginCore::QueryFTInterface得到
+ */
+static const GUID IID_IFTTrade_HK = 
+{ 0x69a88049, 0x252e, 0x4a12, { 0x83, 0x41, 0xdd, 0x4c, 0x6e, 0x84, 0x8b, 0x27 } };
+
 interface ITrade_HK
 {
 	/**
@@ -266,6 +292,16 @@ interface ITrade_HK
 	virtual bool QueryOrderList(Trade_Env enEnv, UINT32* pCookie) = 0;
 
 	/**
+	* 查询成交记录列表
+
+	* @param enEnv 交易环境(实盘交易或仿真交易).
+	* @param pCookie 接收本次调用对应的Cookie值，用于查询结果回调时做对应关系判断.
+
+	* @return true查询成功，false查询失败.
+	*/
+	virtual bool QueryDealList(Trade_Env enEnv, UINT32* pCookie) = 0;
+
+	/**
 	* 查询账户信息
 
 	* @param enEnv 交易环境(实盘交易或仿真交易).
@@ -306,7 +342,7 @@ interface ITradeCallBack_HK
 	* @param enSvrRet 服务器处理结果.
 	* @param nErrCode 错误码.
 	*/
-	virtual void OnUnlockTrade(UINT32 nCookie, Trade_SvrResult enSvrRet, UINT16 nErrCode) = 0;
+	virtual void OnUnlockTrade(UINT32 nCookie, Trade_SvrResult enSvrRet, UINT64 nErrCode) = 0;
 
 	/**
 	* 下单请求返回
@@ -373,6 +409,16 @@ interface ITradeCallBack_HK
 	virtual void OnQueryOrderList(Trade_Env enEnv, UINT32 nCookie, INT32 nCount, const Trade_OrderItem* pArrOrder) = 0;
 
 	/**
+	* 查询成交记录列表回调
+
+	* @param enEnv 交易环境(实盘交易或仿真交易).
+	* @param nCookie 请求时的Cookie.
+	* @param nCount 成交记录个数.
+	* @param pArrDeal 成交记录数组指针.
+	*/
+	virtual void OnQueryDealList(Trade_Env enEnv, UINT32 nCookie, INT32 nCount, const Trade_DealItem* pArrDeal) = 0;
+
+	/**
 	* 查询账户信息回调
 
 	* @param enEnv 交易环境(实盘交易或仿真交易).
@@ -394,6 +440,12 @@ interface ITradeCallBack_HK
 
 //美股交易API调用/回调接口定义
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *	美股交易接口 ITrade_US, 插件宿主实现，通过查询IFTPluginCore::QueryFTInterface得到
+ */
+static const GUID IID_IFTTrade_US = 
+{ 0x66c2e76d, 0x8786, 0x4bf0, { 0x95, 0x34, 0xd2, 0x86, 0x4d, 0x53, 0x9, 0xc6 } };
 interface ITrade_US
 {
 	/**
@@ -453,6 +505,15 @@ interface ITrade_US
 	* @return true查询成功，false查询失败.
 	*/
 	virtual bool QueryOrderList(UINT32* pCookie) = 0;
+
+	/**
+	* 查询成交记录列表
+
+	* @param pCookie 接收本次调用对应的Cookie值，用于查询结果回调时做对应关系判断.
+
+	* @return true查询成功，false查询失败.
+	*/
+	virtual bool QueryDealList(UINT32* pCookie) = 0;
 
 	/**
 	* 查询账户信息
@@ -532,6 +593,15 @@ interface ITradeCallBack_US
 	* @param pArrOrder 订单数组指针.
 	*/
 	virtual void OnQueryOrderList(UINT32 nCookie, INT32 nCount, const Trade_OrderItem* pArrOrder) = 0;
+
+	/**
+	* 查询交易记录列表回调
+
+	* @param nCookie 请求时的Cookie.
+	* @param nCount 交易记录个数.
+	* @param pArrDeal 交易记录数组指针.
+	*/
+	virtual void OnQueryDealList(UINT32 nCookie, INT32 nCount, const Trade_DealItem* pArrDeal) = 0;
 
 	/**
 	* 查询账户信息回调

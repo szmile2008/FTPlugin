@@ -1,7 +1,7 @@
 #pragma once
-#include "Include/Define_Struct_Plugin.h"
-#include "Include/IQuote.h"
-#include "Include/ITrade.h"
+#include "Include/FTPluginCore.h"
+#include "Include/FTPluginQuoteInterface.h"
+#include "Include/FTPluginTradeInterface.h"
 #include "Protocol/ProtoDataStruct_Trade.h"
 #include "TimerWnd.h"
 #include "MsgHandler.h"
@@ -9,16 +9,16 @@
 
 class CPluginHKTradeServer;
 
-class CPluginQueryAccInfo : public CTimerWndInterface, public CMsgHandlerEventInterface
+class CPluginQueryHKDeal : public CTimerWndInterface, public CMsgHandlerEventInterface
 {
 public:
-	CPluginQueryAccInfo();
-	virtual ~CPluginQueryAccInfo();
+	CPluginQueryHKDeal();
+	virtual ~CPluginQueryHKDeal();
 	
 	void Init(CPluginHKTradeServer* pTradeServer, ITrade_HK*  pTradeOp);
 	void Uninit();	
 	void SetTradeReqData(int nCmdID, const Json::Value &jsnVal, SOCKET sock);
-	void NotifyOnQueryAccInfo(Trade_Env enEnv, UINT32 nCookie, const Trade_AccInfo& accInfo);
+	void NotifyOnQueryHKDeal(Trade_Env enEnv, UINT32 nCookie, INT32 nCount, const Trade_DealItem* pArrDeal);
 
 protected:
 	//CTimerWndInterface 
@@ -29,8 +29,8 @@ protected:
 
 protected:
 	//tomodify 1
-	typedef QueryAccInfo_Req	TradeReqType;
-	typedef QueryAccInfo_Ack	TradeAckType;
+	typedef QueryHKDeal_Req	TradeReqType;
+	typedef QueryHKDeal_Ack	TradeAckType;
 
 	struct	StockDataReq
 	{

@@ -1,23 +1,16 @@
 #pragma once
 
-#include "IQuote.h"
-#include "ITrade.h" 
-
-static const GUID IID_IFTQuoteData = 
-{ 0xb75073e3, 0xaa3a, 0x4717, { 0xac, 0xa2, 0x11, 0x94, 0xa1, 0x3, 0x78, 0xc7 } };
-
-static const GUID IID_IFTQuoteOperation = 
-{ 0x9c65990c, 0x903, 0x4185, { 0x97, 0x12, 0x3e, 0xa7, 0xab, 0x34, 0xd, 0xc5 } };
-
-static const GUID IID_IFTTrade = 
-{ 0x69a88049, 0x252e, 0x4a12, { 0x83, 0x41, 0xdd, 0x4c, 0x6e, 0x84, 0x8b, 0x27 } };
-
+#include "FTPluginQuoteInterface.h"
+#include "FTPluginTradeInterface.h" 
 
 /**
 * 该插件接口要求的FTCore匹配版本号
 */
-#define  FTCore_Support_Ver  101
+#define  FTCore_Support_Ver  108
 
+/**
+ *	由牛牛客户端实现的插件宿主接口
+ */
 interface IFTPluginCore 
 { 
 	/**
@@ -58,7 +51,9 @@ interface IFTPluginMoudle
 	* 主程序事件通知时， 从Plugin得到回调接口 
 	*/
 	virtual void  GetPluginCallback_Quote(IQuoteInfoCallback** pCallback) = 0; 
+	virtual void  GetPluginCallback_QuoteKL(IQuoteKLCallback** pCallback) = 0; 
 	virtual void  GetPluginCallback_TradeHK(ITradeCallBack_HK** pCallback) = 0; 
+	virtual void  GetPluginCallback_TradeUS(ITradeCallBack_US** pCallback) = 0; 
 }; 
 
 
